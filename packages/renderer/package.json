@@ -1,0 +1,37 @@
+{
+  "name": "@svelte-pdf/renderer",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Svelte 5 renderer for svelte-pdf",
+  "type": "module",
+  "svelte": "./src/index.js",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "svelte": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./server": {
+      "types": "./src/server.d.ts",
+      "default": "./src/server.js"
+    }
+  },
+  "dependencies": {
+    "@svelte-pdf/engine": "0.1.0",
+    "queue": "^6.0.1"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^0.1.100",
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "jest-image-snapshot": "^6.5.2",
+    "pdfjs-dist": "^4.10.38",
+    "svelte": "^5.56.8",
+    "vitest": "^1.2.0",
+    "vitest-fetch-mock": "^0.4.5"
+  }
+}

@@ -24,6 +24,67 @@ The source code in this repository is derived from the react-pdf project. The en
 - `<Markdown content="..." />` component with support for headings, paragraphs, bold, italic, strikethrough, links, lists, blockquotes, inline code, code blocks, and horizontal rules.
 - Visual regression tests for the renderer and markdown packages, adapted from react-pdf's test approach.
 
+## Running tests
+
+```bash
+# Install dependencies
+bun install
+
+# Renderer tests (Svelte component layer)
+bun run test:renderer:run
+
+# Markdown tests
+bun run test:markdown:run
+
+# Engine tests (these have pre-existing environmental failures on Node v24)
+bun run test:engine
+
+# All tests
+bun test run
+```
+
+## How to test rendering yourself
+
+You can render any Svelte document component to a PDF buffer on the server:
+
+```js
+import { renderToBuffer, renderToFile } from '@svelte-pdf/renderer/server';
+import MyDocument from './MyDocument.svelte';
+
+// To a Node Buffer
+const buffer = await renderToBuffer(MyDocument, { title: 'Hello' });
+
+// Or to a file
+await renderToFile(MyDocument, { title: 'Hello' }, './output.pdf');
+```
+
+For browser rendering, use `usePDF()`:
+
+```svelte
+<script>
+  import { usePDF, PDFViewer } from '@svelte-pdf/renderer';
+  import MyDocument from './MyDocument.svelte';
+
+  const pdf = usePDF(MyDocument, { title: 'Hello' });
+</script>
+
+{#if pdf.loading}
+  <p>Loading PDF...</p>
+{:else if pdf.error}
+  <p>Error: {pdf.error.message}</p>
+{:else}
+  <PDFViewer document={MyDocument} documentProps={{ title: 'Hello' }} />
+{/if}
+```
+
+To visually inspect a generated PDF, convert it to an image with `pdftoppm`:
+
+```bash
+pdftoppm -png -r 200 output.pdf preview
+```
+
+This generates `preview-1.png`, `preview-2.png`, etc. at 200 DPI.
+
 ## Known limitations and risks
 
 - **Build pipeline**: the packages are currently consumed directly from source via Vitest aliases. A real build/publish pipeline will need to handle the `yoga-layout` WASM binary, engine TypeScript ESM resolution, and Svelte server/browser compilation.

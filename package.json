@@ -10,7 +10,10 @@
   "scripts": {
     "test": "vitest",
     "test:engine": "vitest --config packages/engine/vitest.config.js",
-    "test:renderer": "vitest --config packages/renderer/vitest.config.js"
+    "test:renderer": "vitest --config packages/renderer/vitest.config.js",
+    "test:markdown": "vitest --config packages/markdown/vitest.config.js",
+    "test:renderer:run": "vitest run --config packages/renderer/vitest.config.js",
+    "test:markdown:run": "vitest run --config packages/markdown/vitest.config.js"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^0.1.100",

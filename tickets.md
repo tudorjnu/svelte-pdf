@@ -99,7 +99,7 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 - [x] Markdown package compiles to `dist/` with server and browser builds plus `.d.ts`. (Client-compiled `dist/index.js` via Rollup + `.d.ts`; the server side is served by the `svelte` condition resolving to shipped `src/`, which svelte-aware bundlers compile per environment — same pattern as the renderer.)
 - [x] `package.json` exports point to built files.
-- [ ] A clean consumer project installs and uses `<Markdown content="..." />`. (Script exists: `packages/markdown/scripts/e2e-markdown-install.sh` — currently fails on the pre-existing markdown link-parsing bug, `"text is not iterable"`; same root cause as the all-features renderer test.)
+- [x] A clean consumer project installs and uses `<Markdown content="..." />`. (Passed: real-mode `packages/markdown/scripts/e2e-markdown-install.sh` — tarball install, SSR render, pdfjs text extraction asserts heading/bold/italic/list/link/code; `--linked` mode also green. Fixed en route: marked v12 token shapes, an unflushed text-run accumulator, and a compressed-stream byte-sniff assertion.)
 - [x] README updated with markdown installation.
 
 ## 9. Automated release pipeline

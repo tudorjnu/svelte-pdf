@@ -72,6 +72,11 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
   plugins: [svelte()],
+  build: {
+    // `vite preview` serves build.outDir; keep it in one place so preview
+    // works without extra flags.
+    outDir: '.build',
+  },
 });
 EOF
 
@@ -130,7 +135,7 @@ else
 fi
 
 echo "Building client bundle..."
-"$ROOT/node_modules/.bin/vite" build --outDir .build >/dev/null
+"$ROOT/node_modules/.bin/vite" build >/dev/null
 
 BUNDLE="$(ls .build/assets/*.js | head -1)"
 grep -q "iframe" "$BUNDLE" || {

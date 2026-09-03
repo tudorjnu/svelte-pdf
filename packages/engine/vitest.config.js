@@ -3,8 +3,24 @@ import { resolve } from 'path';
 
 const root = resolve(__dirname);
 
+const yogaLoad = resolve(root, '../../node_modules/yoga-layout/dist/src/load.js');
+
 export default defineConfig({
   root,
+  plugins: [
+    // yoga-layout's base64 WASM loader breaks under vitest/node here (the
+    // renderer suite ships the same shim); route the specifiers through the
+    // shared shim and mark them external so the mock path is exercised.
+    {
+      name: 'externalize-yoga',
+      enforce: 'pre',
+      resolveId(id) {
+        if (id === 'yoga-layout/load' || id === 'yoga-layout') {
+          return { id: yogaLoad, external: true };
+        }
+      },
+    },
+  ],
   resolve: {
     alias: [
       // Catch-all: @svelte-pdf/engine/<pkg>/<subpath> → src/<pkg>/<subpath>

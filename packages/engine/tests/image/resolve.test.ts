@@ -15,6 +15,12 @@ const localJPGImage = fs.readFileSync(jpgLogalPath);
 const pngLogalPath = path.join(__dirname, './assets/test.png');
 const localPNGImage = fs.readFileSync(pngLogalPath);
 
+// vitest-fetch-mock cannot build a body from a raw Buffer (its
+// normalizeResponse reads `.body`, which is undefined on Buffer/Uint8Array,
+// yielding an empty response). Wrap fixture bytes in a real Response — a
+// fresh one per call, since Response bodies can be consumed only once.
+const remoteImage = (data: Buffer) => new Response(data);
+
 describe('image resolveImage', () => {
   beforeEach(() => {
     fetchMock.resetMocks();
@@ -22,7 +28,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should fetch remote image using GET method by default', async () => {
-    fetchMock.once(localJPGImage);
+    fetchMock.once(remoteImage(localJPGImage));
 
     await resolveImage({ uri: jpgImageUrl });
 
@@ -30,7 +36,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should fetch remote image using passed method', async () => {
-    fetchMock.once(localJPGImage);
+    fetchMock.once(remoteImage(localJPGImage));
 
     await resolveImage({ uri: jpgImageUrl, method: 'POST' });
 
@@ -38,7 +44,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should fetch remote image using passed headers', async () => {
-    fetchMock.once(localJPGImage);
+    fetchMock.once(remoteImage(localJPGImage));
 
     const headers = { Authorization: 'Bearer qwerty' };
     await resolveImage({ uri: jpgImageUrl, headers });
@@ -47,7 +53,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should fetch remote image using passed body', async () => {
-    fetchMock.once(localJPGImage);
+    fetchMock.once(remoteImage(localJPGImage));
 
     const body = 'qwerty';
     await resolveImage({ uri: jpgImageUrl, body, method: 'POST' });
@@ -56,7 +62,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should fetch remote image using passed credentials', async () => {
-    fetchMock.once(localJPGImage);
+    fetchMock.once(remoteImage(localJPGImage));
 
     const credentials = 'include';
     await resolveImage({ uri: jpgImageUrl, credentials });
@@ -65,7 +71,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should not include credentials if not exist', async () => {
-    fetchMock.once(localJPGImage);
+    fetchMock.once(remoteImage(localJPGImage));
 
     await resolveImage({ uri: jpgImageUrl });
 
@@ -73,7 +79,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should render a jpeg image over http', async () => {
-    fetchMock.once(localJPGImage);
+    fetchMock.once(remoteImage(localJPGImage));
 
     const image = await resolveImage({ uri: jpgImageUrl });
 
@@ -83,7 +89,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should render a png image over http', async () => {
-    fetchMock.once(localPNGImage);
+    fetchMock.once(remoteImage(localPNGImage));
 
     const image = await resolveImage({ uri: pngImageUrl });
 
@@ -114,7 +120,7 @@ describe('image resolveImage', () => {
 
   test('Should render a local image from relative path', async () => {
     const image = await resolveImage({
-      uri: 'packages/layout/tests/assets/test.jpg',
+      uri: 'packages/engine/tests/image/assets/test.jpg',
     });
 
     expect(image?.data).toBeTruthy();
@@ -124,7 +130,7 @@ describe('image resolveImage', () => {
 
   test('Should render a local image from src object', async () => {
     const image = await resolveImage({
-      uri: './packages/layout/tests/assets/test.jpg',
+      uri: 'packages/engine/tests/image/assets/test.jpg',
     });
 
     expect(image?.data).toBeTruthy();
@@ -134,7 +140,7 @@ describe('image resolveImage', () => {
 
   test('Should render a local image with spaces in filename', async () => {
     const image = await resolveImage({
-      uri: './packages/image/tests/assets/test with spaces.jpg',
+      uri: 'packages/engine/tests/image/assets/test with spaces.jpg',
     });
 
     expect(image?.data).toBeTruthy();
@@ -144,7 +150,7 @@ describe('image resolveImage', () => {
 
   test('Should render a local image with special characters in filename', async () => {
     const image = await resolveImage({
-      uri: "./packages/image/tests/assets/special_ _%20_@&é'(§è!çà)-^$ù`,;=.+%£¨.jpg",
+      uri: "packages/engine/tests/image/assets/special_ _%20_@&é'(§è!çà)-^$ù`,;=.+%£¨.jpg",
     });
 
     expect(image?.data).toBeTruthy();
@@ -187,7 +193,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should not cache previously loaded remote images if flag false', async () => {
-    fetchMock.mockResponse(localJPGImage);
+    fetchMock.mockResponse(() => remoteImage(localJPGImage));
 
     const image1 = await resolveImage({ uri: jpgImageUrl }, { cache: false });
     const image2 = await resolveImage({ uri: jpgImageUrl }, { cache: false });
@@ -196,7 +202,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should cache previously loaded local images by default', async () => {
-    fetchMock.mockResponse(localJPGImage);
+    fetchMock.mockResponse(() => remoteImage(localJPGImage));
 
     const image1 = await resolveImage({ uri: jpgImageUrl });
     const image2 = await resolveImage({ uri: jpgImageUrl });
@@ -205,7 +211,7 @@ describe('image resolveImage', () => {
   });
 
   test('Should not cache previously loaded local images if flag false', async () => {
-    fetchMock.mockResponse(localJPGImage);
+    fetchMock.mockResponse(() => remoteImage(localJPGImage));
 
     const image1 = await resolveImage(localJPGImage, { cache: false });
     const image2 = await resolveImage(localJPGImage, { cache: false });
@@ -301,7 +307,7 @@ describe('image resolveImage', () => {
   test('Should throw for unsupported remote image format', async () => {
     // GIF89a magic bytes - neither JPEG nor PNG
     const gifBuffer = Buffer.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]);
-    fetchMock.once(gifBuffer);
+    fetchMock.once(remoteImage(gifBuffer));
 
     await expect(
       resolveImage({ uri: 'https://example.com/image.gif' }),

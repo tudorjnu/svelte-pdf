@@ -5,3 +5,5 @@ const fetchMocker = createFetchMock(vi);
 fetchMocker.enableMocks();
 
 globalThis.BROWSER = false;
+
+vi.mock('yoga-layout/load', () => import('./tests/yoga-shim.js'));

@@ -12,7 +12,7 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 - [x] All framework-agnostic packages from react-pdf copied into `@svelte-pdf/engine` as internal modules
 - [x] All internal imports changed from `@react-pdf/*` to `@svelte-pdf/engine`
-- [x] ~204 engine tests pass with updated import paths — 2,082 tests passing, 26 failing (11 layout/yoga-layout WASM + 15 image/Node.js v24 Buffer, both environmental issues)
+- [x] ~204 engine tests pass with updated import paths — 2,109 tests total: all green after later fixes (was: 2,082 passing, 26 failing — 11 yoga-layout WASM loader + 15 image/Buffer environmental issues; fixed by porting the renderer's yoga-shim into the engine's vitest setup, wrapping fetch-mock bodies in real `Response` objects, and repointing image assets to post-consolidation paths)
 - [x] Package builds and exports the APIs the renderer will need (layout function, render function, PDFDocument, FontStore, primitives, stylesheet resolver, fns)
 
 ## 2. Tracer bullet — render a simple PDF from Svelte components

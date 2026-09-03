@@ -24,6 +24,77 @@ The source code in this repository is derived from the react-pdf project. The en
 - `<Markdown content="..." />` component with support for headings, paragraphs, bold, italic, strikethrough, links, lists, blockquotes, inline code, code blocks, and horizontal rules.
 - Visual regression tests for the renderer and markdown packages, adapted from react-pdf's test approach.
 
+## Server-side rendering (Node / SvelteKit)
+
+Install the renderer — `@svelte-pdf/engine` comes with it as a dependency:
+
+```bash
+npm install @svelte-pdf/renderer
+```
+
+Define a document as a Svelte component:
+
+```svelte
+<!-- $lib/MyDocument.svelte -->
+<script>
+  import { Document, Page, View, Text } from '@svelte-pdf/renderer';
+</script>
+
+<Document title="Hello svelte-pdf">
+  <Page size="A4">
+    <View style={{ padding: 48, fontFamily: 'Helvetica' }}>
+      <Text style={{ fontSize: 18 }}>Rendered with svelte-pdf!</Text>
+    </View>
+  </Page>
+</Document>
+```
+
+Then render it from any Node entry point (API route, script, queue worker…):
+
+```js
+import { renderToBuffer } from '@svelte-pdf/renderer/server';
+import MyDocument from '$lib/MyDocument.svelte';
+
+const buffer = await renderToBuffer(MyDocument, { title: 'Hello' });
+// buffer: Node Buffer containing the PDF
+```
+
+`./server` also exports `renderToStream`, `renderToFile`, `pdf`, `Font`, and `version`.
+
+### How it resolves
+
+- `@svelte-pdf/renderer/server` is a **prebuilt ES module** in `dist/server/` with `.d.ts` — no bundler compilation needed on your side.
+- The components (`Document`, `Page`, …) ship as **Svelte source** behind the package's `svelte` export condition and are compiled by your app's bundler (Vite + `vite-plugin-svelte`, the same path SvelteKit uses).
+- In Vite SSR builds, keep `svelte` and the `./server` subpath **external** so a single Svelte runtime is shared and the prebuilt server bundle is what actually executes (SvelteKit does this by default):
+
+```js
+// vite.config.js — only needed in hand-rolled Vite SSR setups, not SvelteKit
+ssr: {
+  noExternal: [/^@svelte-pdf\/renderer$/],
+  external: ['svelte', '@svelte-pdf/renderer/server'],
+},
+```
+
+Until the packages are published to npm, install them from a local checkout:
+
+```json
+{
+  "dependencies": {
+    "@svelte-pdf/renderer": "file:../svelte-pdf/packages/renderer",
+    "@svelte-pdf/engine": "file:../svelte-pdf/packages/engine"
+  },
+  "overrides": { "@svelte-pdf/engine": "file:../svelte-pdf/packages/engine" }
+}
+```
+
+The full server flow (clean project → install → Vite SSR build → render) is automated by the acceptance script:
+
+```bash
+packages/renderer/scripts/e2e-server-install.sh
+```
+
+Run it without arguments for a real registry install, or with `--linked` to wire dependencies from the monorepo's `node_modules` without network access.
+
 ## Extended feature example
 
 A larger example is included to exercise all core components:
@@ -66,13 +137,13 @@ You can edit `svelte-pdf/examples/Hello.svelte` to change what gets rendered, th
 
 ## Publishing to npm
 
-The packages are currently source-only and consumed through Vitest aliases. Before publishing you need a build step that:
+Build state:
 
-1. Compiles Svelte components for both browser and server.
-2. Resolves `@svelte-pdf/engine/*` TypeScript imports and handles the `yoga-layout` WASM binary so it is not corrupted by bundlers.
-3. Produces proper `main` / `module` / `exports` entry points in each `package.json`.
+- `@svelte-pdf/engine` — builds with Rollup (`bun run --cwd packages/engine build`): `dist/` JS + `.d.ts` for every subpath export, `yoga-layout` kept external.
+- `@svelte-pdf/renderer` — the `./server` entry builds to `dist/server/` with `.d.ts`. The browser build (`.` with compiled Svelte components) is not done yet, so the `.` export still points at `src/` and relies on the `svelte` condition + downstream compilation.
+- `@svelte-pdf/markdown` — source-only.
 
-A minimal publishing path would be:
+Remaining before first publish:
 
 ```bash
 # 1. Add build scripts (e.g. Rollup or tsup) to each package
@@ -153,7 +224,8 @@ This generates `preview-1.png`, `preview-2.png`, etc. at 200 DPI.
 
 ## Known limitations and risks
 
-- **Build pipeline**: the packages are currently consumed directly from source via Vitest aliases. A real build/publish pipeline will need to handle the `yoga-layout` WASM binary, engine TypeScript ESM resolution, and Svelte server/browser compilation.
+- **Build pipeline**: the engine and the renderer's `./server` entry are built (Rollup, with `yoga-layout` kept external). The renderer's browser build and the markdown build are still pending, and no CI or Changesets wiring exists yet.
+- **Build tooling quirk**: rollup's property-value analysis cannot see the ROOT-container mutation that happens inside Svelte's `render()` context, so the renderer's server bundle is built with `treeshake: false` (see `packages/renderer/rollup.config.js`). Re-enable tree-shaking only after verifying the `renderToBuffer`/`renderToStream` bodies survive.
 - **Browser APIs**: `usePDF`, `PDFViewer`, and `PDFDownloadLink` are implemented but only verified through export and structural tests. They need a browser or jsdom environment for full runtime testing.
 - **Engine unit tests**: on the current Node.js version, a subset of engine tests fail due to environmental issues with the `yoga-layout` WASM loader and Node.js v24 Buffer handling. These failures are pre-existing and do not affect the Svelte renderer or markdown packages.
 

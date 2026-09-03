@@ -74,10 +74,10 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 **Blocked by:** 5. Build @svelte-pdf/engine for npm consumption.
 
-- [ ] Renderer server entry compiles to `dist/server/` with `.d.ts`.
-- [ ] `package.json` exports `./server` to the server build.
-- [ ] A clean test project outside the monorepo installs the built packages and renders a PDF.
-- [ ] README updated with server installation and usage example.
+- [x] Renderer server entry compiles to `dist/server/` with `.d.ts`.
+- [x] `package.json` exports `./server` to the server build.
+- [x] A clean test project outside the monorepo installs the built packages and renders a PDF. (Verified via `packages/renderer/scripts/e2e-server-install.sh --linked` — installs the two packages by wiring deps from the monorepo `node_modules`; run without `--linked` for a real registry install.)
+- [x] README updated with server installation and usage example.
 
 ## 7. Browser build of @svelte-pdf/renderer
 

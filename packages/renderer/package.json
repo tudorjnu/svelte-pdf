@@ -14,9 +14,18 @@
       "default": "./src/index.js"
     },
     "./server": {
-      "types": "./src/server.d.ts",
-      "default": "./src/server.js"
+      "types": "./dist/server/server.d.ts",
+      "default": "./dist/server/server.js"
     }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c && cp src/server.d.ts src/pdf.d.ts dist/server/",
+    "build:clean": "rm -rf dist && bun run build",
+    "smoke": "node scripts/smoke.js"
   },
   "dependencies": {
     "@svelte-pdf/engine": "0.1.0",
@@ -26,10 +35,14 @@
     "svelte": "^5.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@napi-rs/canvas": "^0.1.100",
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
     "jest-image-snapshot": "^6.5.2",
     "pdfjs-dist": "^4.10.38",
+    "rollup": "^4.62.4",
+    "rollup-plugin-delete": "^3.0.2",
     "svelte": "^5.56.8",
     "vitest": "^1.2.0",
     "vitest-fetch-mock": "^0.4.5"

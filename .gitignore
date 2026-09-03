@@ -10,3 +10,7 @@ examples/*.png
 packages/renderer/tests/output.pdf
 packages/renderer/tests/output.png
 packages/renderer/tests/__tmp-output.pdf
+
+# bun temp/cache (sandbox workaround — home is read-only)
+.bun-tmp
+.bun-cache

@@ -16,15 +16,44 @@
 
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-  // Register a custom font from react-pdf's test assets
+  // Register custom fonts from react-pdf's test assets. The markdown content
+  // renders bold/italic runs, and the engine resolves font styles exactly
+  // (no fallback across fontStyle), so every variant the document uses needs
+  // a source. In the hermetic test setup all URLs serve the same fixture
+  // TTF — enough to exercise the pipeline without real variant metrics.
   Font.register({
     family: 'Oswald',
-    src: 'https://fonts.gstatic.com/s/oswald/v13/Y_TKV6o8WovbUd3m_X9aAA.ttf',
+    fonts: [
+      {
+        src: 'https://fonts.gstatic.com/s/oswald/v13/Y_TKV6o8WovbUd3m_X9aAA.ttf',
+      },
+      {
+        src: 'https://fonts.gstatic.com/s/oswald/v13/Y_TKV6o8WovbUd3m_X9aAA.ttf',
+        fontWeight: 700,
+      },
+    ],
   });
 
   Font.register({
     family: 'Open Sans',
-    src: 'https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFVZ0e.ttf',
+    fonts: [
+      {
+        src: 'https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFVZ0e.ttf',
+      },
+      {
+        src: 'https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFVZ0e.ttf',
+        fontWeight: 700,
+      },
+      {
+        src: 'https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFVZ0e.ttf',
+        fontStyle: 'italic',
+      },
+      {
+        src: 'https://fonts.gstatic.com/s/opensans/v17/mem8YaGs126MiZpBA-UFVZ0e.ttf',
+        fontWeight: 700,
+        fontStyle: 'italic',
+      },
+    ],
   });
 
   const { title = 'svelte-pdf feature test' } = $props();

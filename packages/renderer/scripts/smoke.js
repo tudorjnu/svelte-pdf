@@ -38,4 +38,41 @@ assert(
   'package ./server Font export should exist',
 );
 
+// Browser entry: compiled components + browser APIs (importable in node; the
+// svelte client runtime is only needed at mount time).
+const browser = await import(resolve(root, 'dist/index.js'));
+for (const name of [
+  'Document',
+  'Page',
+  'View',
+  'Text',
+  'Link',
+  'Note',
+  'Image',
+  'PDFViewer',
+  'PDFDownloadLink',
+  'usePDF',
+  'pdf',
+  'Font',
+  'version',
+]) {
+  assert(browser[name] !== undefined, `browser export ${name} should exist`);
+}
+assert(
+  typeof browser.usePDF === 'function',
+  'browser usePDF should be a function',
+);
+assert(typeof browser.pdf === 'function', 'browser pdf should be a function');
+
+const browserPkg = await import('@svelte-pdf/renderer');
+assert(
+  typeof browserPkg.PDFViewer === 'function',
+  'package . export should include PDFViewer',
+);
+assert(
+  browserPkg.Document !== undefined,
+  'package . export should include Document',
+);
+
 console.log('Renderer server smoke test passed.');
+console.log('Renderer browser smoke test passed.');

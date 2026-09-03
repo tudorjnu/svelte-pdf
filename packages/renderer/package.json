@@ -9,9 +9,9 @@
   "types": "./src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "svelte": "./src/index.js",
-      "default": "./src/index.js"
+      "default": "./dist/index.js"
     },
     "./server": {
       "types": "./dist/server/server.d.ts",
@@ -23,7 +23,7 @@
     "src"
   ],
   "scripts": {
-    "build": "rollup -c && cp src/server.d.ts src/pdf.d.ts dist/server/",
+    "build": "rollup -c && cp src/server.d.ts src/pdf.d.ts dist/server/ && cp src/index.d.ts dist/index.d.ts",
     "build:clean": "rm -rf dist && bun run build",
     "smoke": "node scripts/smoke.js"
   },

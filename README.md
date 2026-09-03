@@ -95,6 +95,39 @@ packages/renderer/scripts/e2e-server-install.sh
 
 Run it without arguments for a real registry install, or with `--linked` to wire dependencies from the monorepo's `node_modules` without network access.
 
+## Browser rendering (Vite)
+
+Same install as the server. The browser entry provides the components plus `PDFViewer`, `PDFDownloadLink`, and `usePDF`:
+
+```svelte
+<script>
+  import { PDFViewer, PDFDownloadLink } from '@svelte-pdf/renderer';
+  import MyDocument from '$lib/MyDocument.svelte';
+</script>
+
+<PDFViewer document={MyDocument} documentProps={{ title: 'Hello' }} title="PDF preview" />
+
+<PDFDownloadLink document={MyDocument} fileName="hello.pdf">
+  {#snippet children()}Download PDF{/snippet}
+</PDFDownloadLink>
+```
+
+### How it resolves
+
+- Bundlers that honor the `svelte` export condition (Vite/vite-plugin-svelte, SvelteKit) compile the components from the shipped Svelte source — one Svelte runtime, correct SSR and client output.
+- Bundlers without the `svelte` condition fall back to the **prebuilt** `dist/index.js` (client-compiled components importing the `svelte` peer runtime).
+- **yoga-layout**: the engine keeps `yoga-layout` external, and its `./load` module embeds the WASM binary as base64 inside an ESM module — so Vite/esbuild pre-bundling and Rollup builds handle it with **no workaround**. There is no separate `.wasm` asset to serve or protect.
+
+> Browser font caveat: fontkit's browser build has no `open()`, so `Font.register` with a **remote URL** throws at render time. Use standard fonts, or register fonts from data (`src` as a `Buffer`/`Uint8Array`), which go through `fontkit.create`. Fetching remote fonts to data in the engine is planned follow-up work.
+
+The browser flow (clean project → install → client build → bundle asserts) is automated by:
+
+```bash
+packages/renderer/scripts/e2e-browser-install.sh
+```
+
+Run it without arguments for a real registry install, or with `--linked` for offline use; it keeps the scaffolded project and prints a `vite preview` command for visual confirmation.
+
 ## Extended feature example
 
 A larger example is included to exercise all core components:
@@ -140,7 +173,7 @@ You can edit `svelte-pdf/examples/Hello.svelte` to change what gets rendered, th
 Build state:
 
 - `@svelte-pdf/engine` — builds with Rollup (`bun run --cwd packages/engine build`): `dist/` JS + `.d.ts` for every subpath export, `yoga-layout` kept external.
-- `@svelte-pdf/renderer` — the `./server` entry builds to `dist/server/` with `.d.ts`. The browser build (`.` with compiled Svelte components) is not done yet, so the `.` export still points at `src/` and relies on the `svelte` condition + downstream compilation.
+- `@svelte-pdf/renderer` — both entries build: `./server` → `dist/server/` and the browser `.` entry → `dist/index.js` (client-compiled components + `usePDF`/`PDFViewer`/`PDFDownloadLink`), each with `.d.ts`. The `svelte` condition still resolves to `src/` so Vite/SvelteKit compile per environment.
 - `@svelte-pdf/markdown` — source-only.
 
 Remaining before first publish:
@@ -224,9 +257,10 @@ This generates `preview-1.png`, `preview-2.png`, etc. at 200 DPI.
 
 ## Known limitations and risks
 
-- **Build pipeline**: the engine and the renderer's `./server` entry are built (Rollup, with `yoga-layout` kept external). The renderer's browser build and the markdown build are still pending, and no CI or Changesets wiring exists yet.
+- **Build pipeline**: the engine, the renderer's `./server` entry, and the renderer's browser entry are built (Rollup, `yoga-layout` external). The markdown build is still pending, and no CI or Changesets wiring exists yet.
 - **Build tooling quirk**: rollup's property-value analysis cannot see the ROOT-container mutation that happens inside Svelte's `render()` context, so the renderer's server bundle is built with `treeshake: false` (see `packages/renderer/rollup.config.js`). Re-enable tree-shaking only after verifying the `renderToBuffer`/`renderToStream` bodies survive.
-- **Browser APIs**: `usePDF`, `PDFViewer`, and `PDFDownloadLink` are implemented but only verified through export and structural tests. They need a browser or jsdom environment for full runtime testing.
+- **Browser fonts**: `fontkit.open` (used for remote-URL fonts) is absent from fontkit's browser build, so custom remote fonts fail in the browser — standard fonts and `Buffer`/`Uint8Array` sources work. Fetching remote fonts to data is follow-up engine work.
+- **Browser APIs**: `usePDF`, `PDFViewer`, and `PDFDownloadLink` are verified through the browser-entry smoke test and the e2e Vite bundle build; full runtime verification needs a real browser (`packages/renderer/scripts/e2e-browser-install.sh` prints a `vite preview` command).
 - **Engine unit tests**: on the current Node.js version, a subset of engine tests fail due to environmental issues with the `yoga-layout` WASM loader and Node.js v24 Buffer handling. These failures are pre-existing and do not affect the Svelte renderer or markdown packages.
 
 ## License

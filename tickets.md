@@ -85,11 +85,11 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 **Blocked by:** 6. End-to-end server install of @svelte-pdf/renderer.
 
-- [ ] Renderer browser entry compiles Svelte components to `dist/` with `.d.ts`.
-- [ ] `package.json` default export points to the browser build.
-- [ ] `usePDF`, `PDFViewer`, and `PDFDownloadLink` are included in the browser build.
-- [ ] A clean Vite browser project renders a PDF preview in an iframe.
-- [ ] README documents the Vite `yoga-layout` workaround.
+- [x] Renderer browser entry compiles Svelte components to `dist/` with `.d.ts`.
+- [x] `package.json` default export points to the browser build.
+- [x] `usePDF`, `PDFViewer`, and `PDFDownloadLink` are included in the browser build.
+- [x] A clean Vite browser project renders a PDF preview in an iframe. (Bundle-verified via `packages/renderer/scripts/e2e-browser-install.sh` — iframe, PDFViewer code, user document, and yoga wasm payload asserted in the built bundle; visual confirmation: run the script, then `vite preview` in the printed directory.)
+- [x] README documents the Vite `yoga-layout` workaround. (Finding: none needed — yoga's WASM ships as base64 inside an ESM module, safe for Vite/esbuild; documented.)
 
 ## 8. Build and install @svelte-pdf/markdown
 

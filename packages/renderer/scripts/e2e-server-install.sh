@@ -15,8 +15,14 @@ LINKED=0
 [ "${1:-}" = "--linked" ] && LINKED=1
 
 # Both packages must be built first.
-[ -f "$ROOT/packages/engine/dist/index.js" ] || { echo "engine not built — run: bun run --cwd packages/engine build" >&2; exit 1; }
-[ -f "$ROOT/packages/renderer/dist/server/server.js" ] || { echo "renderer not built — run: bun run --cwd packages/renderer build" >&2; exit 1; }
+[ -f "$ROOT/packages/engine/dist/index.js" ] || {
+  echo "engine not built — run: bun run --cwd packages/engine build" >&2
+  exit 1
+}
+[ -f "$ROOT/packages/renderer/dist/server/server.js" ] || {
+  echo "renderer not built — run: bun run --cwd packages/renderer build" >&2
+  exit 1
+}
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/svelte-pdf-e2e-server.XXXXXX")"
 cleanup() { rm -rf "$WORK"; }
@@ -25,7 +31,7 @@ trap cleanup EXIT
 mkdir -p "$WORK/src"
 cd "$WORK"
 
-cat > package.json <<EOF
+cat >package.json <<EOF
 {
   "name": "svelte-pdf-e2e-server",
   "private": true,
@@ -45,7 +51,7 @@ cat > package.json <<EOF
 }
 EOF
 
-cat > vite.config.js <<'EOF'
+cat >vite.config.js <<'EOF'
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
@@ -62,7 +68,7 @@ export default defineConfig({
 });
 EOF
 
-cat > src/MyDocument.svelte <<'EOF'
+cat >src/MyDocument.svelte <<'EOF'
 <script>
   import { Document, Page, View, Text } from '@svelte-pdf/renderer';
 </script>
@@ -78,7 +84,7 @@ cat > src/MyDocument.svelte <<'EOF'
 </Document>
 EOF
 
-cat > src/render.js <<'EOF'
+cat >src/render.js <<'EOF'
 import { writeFileSync } from 'node:fs';
 import { renderToBuffer } from '@svelte-pdf/renderer/server';
 import MyDocument from './MyDocument.svelte';

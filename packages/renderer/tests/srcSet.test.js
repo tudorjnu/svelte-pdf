@@ -14,9 +14,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const snapshotsDir = resolve(__dirname, '__snapshots__');
 
 const readImage = (name) =>
-  fs.readFileSync(
-    path.resolve(__dirname, './images', name),
-  );
+  fs.readFileSync(path.resolve(__dirname, './images', name));
 
 describe('visual regression: srcSet', () => {
   test('selects different sources based on page width', async () => {

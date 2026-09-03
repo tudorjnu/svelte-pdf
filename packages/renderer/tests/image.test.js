@@ -18,7 +18,9 @@ const readImage = (name) =>
 
 describe('visual regression: image', () => {
   test('jpeg orientation 1', async () => {
-    const image = await renderComponent(ImageDoc, { imageSrc: readImage('orientation-1.jpeg') });
+    const image = await renderComponent(ImageDoc, {
+      imageSrc: readImage('orientation-1.jpeg'),
+    });
 
     expect(image).toMatchImageSnapshot({
       customSnapshotsDir: snapshotsDir,

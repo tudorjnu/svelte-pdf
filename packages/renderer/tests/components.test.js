@@ -41,11 +41,7 @@ describe('core components', () => {
     const outputPath = path.resolve(__dirname, '__tmp-output.pdf');
 
     try {
-      await renderToFile(
-        ComponentsDoc,
-        { textValue: 'File test' },
-        outputPath,
-      );
+      await renderToFile(ComponentsDoc, { textValue: 'File test' }, outputPath);
 
       const written = fs.readFileSync(outputPath);
       expect(written.toString('ascii', 0, 4)).toBe('%PDF');

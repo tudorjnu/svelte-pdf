@@ -6,7 +6,10 @@ const root = resolve(__dirname);
 const engineRoot = resolve(root, '../engine');
 const rendererRoot = resolve(root, '../renderer');
 
-const yogaLoad = resolve(root, '../../node_modules/yoga-layout/dist/src/load.js');
+const yogaLoad = resolve(
+  root,
+  '../../node_modules/yoga-layout/dist/src/load.js',
+);
 
 export default defineConfig({
   root,
@@ -65,7 +68,11 @@ export default defineConfig({
     ],
   },
   test: {
-    include: ['tests/**/*.test.js', 'tests/**/*.test.ts', 'tests/**/*.test.svelte'],
+    include: [
+      'tests/**/*.test.js',
+      'tests/**/*.test.ts',
+      'tests/**/*.test.svelte',
+    ],
     environment: 'node',
     setupFiles: ['vitest.setup.js'],
   },

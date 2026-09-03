@@ -3,3 +3,10 @@ dist
 coverage
 *.log
 .vitest
+
+# generated example/test render artifacts
+examples/*.pdf
+examples/*.png
+packages/renderer/tests/output.pdf
+packages/renderer/tests/output.png
+packages/renderer/tests/__tmp-output.pdf

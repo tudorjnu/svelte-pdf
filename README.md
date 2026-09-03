@@ -24,6 +24,72 @@ The source code in this repository is derived from the react-pdf project. The en
 - `<Markdown content="..." />` component with support for headings, paragraphs, bold, italic, strikethrough, links, lists, blockquotes, inline code, code blocks, and horizontal rules.
 - Visual regression tests for the renderer and markdown packages, adapted from react-pdf's test approach.
 
+## Extended feature example
+
+A larger example is included to exercise all core components:
+
+```bash
+bun run test:renderer:run -- tests/extended-render.test.js
+```
+
+This renders `examples/Extended.svelte` to:
+
+- `examples/extended.pdf`
+- `examples/extended.png` — a 1.5× DPI preview of all pages stacked vertically.
+
+The extended example includes:
+
+- `Document` metadata (title, author, subject, keywords, creator)
+- `Page` with `size` and a second page with `orientation="landscape"`
+- `View` with flex row layout, gap, padding, background color, border radius
+- `Text` with sizes, weights, colors, and the `fixed` + `render` page-number prop
+- `Link` with external URL and styled children
+- `Image` loaded from a local `Buffer` (passed via the `imageSrc` prop)
+- `Note` annotation
+- Conditional rendering via `{#if}`
+
+> Note on images: remote URLs can fail in the test environment because `vitest-fetch-mock` intercepts network requests and the engine's image parser has known issues with Node.js v24 buffers. For reliable local visual tests, pass a local image `Buffer` as the `imageSrc` prop. The extended test does this automatically.
+
+Edit `svelte-pdf/examples/Extended.svelte` and rerun the command to experiment.
+
+## Quick local visual test
+
+A ready-to-run example is included. It renders a sample Svelte document to both `examples/output.pdf` and `examples/output.png`.
+
+```bash
+bun run test:renderer:run -- tests/local-render.test.js
+```
+
+After running, open `svelte-pdf/examples/output.png` to see the rendered PDF preview, or open `svelte-pdf/examples/output.pdf` in any PDF reader.
+
+You can edit `svelte-pdf/examples/Hello.svelte` to change what gets rendered, then run the same command again.
+
+## Publishing to npm
+
+The packages are currently source-only and consumed through Vitest aliases. Before publishing you need a build step that:
+
+1. Compiles Svelte components for both browser and server.
+2. Resolves `@svelte-pdf/engine/*` TypeScript imports and handles the `yoga-layout` WASM binary so it is not corrupted by bundlers.
+3. Produces proper `main` / `module` / `exports` entry points in each `package.json`.
+
+A minimal publishing path would be:
+
+```bash
+# 1. Add build scripts (e.g. Rollup or tsup) to each package
+# 2. Build all packages
+bun run build
+
+# 3. Bump versions
+bun run version-packages
+
+# 4. Publish each package
+bun publish --workspace packages/renderer
+bun publish --workspace packages/markdown
+bun publish --workspace packages/engine
+```
+
+Until a build pipeline is in place, the packages cannot be published as-is.
+
 ## Running tests
 
 ```bash

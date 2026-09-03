@@ -122,13 +122,42 @@ const header = buffer.subarray(0, 5).toString('latin1');
 if (!header.startsWith('%PDF-')) {
   throw new Error(`Expected a PDF, got: ${JSON.stringify(header)}`);
 }
-// Markdown content must actually appear in the PDF text stream.
-const text = buffer.toString('latin1');
-if (!text.includes('Installed markdown')) {
-  throw new Error('Markdown heading missing from rendered PDF');
-}
 writeFileSync('output.pdf', buffer);
 console.log(`OK: renderToBuffer produced ${buffer.length} bytes -> output.pdf`);
+EOF
+
+cat >check-text.mjs <<'EOF'
+// Content streams are Flate-compressed, so the markdown text is not
+// visible in the raw PDF bytes. Extract it with pdfjs from the monorepo
+// (the clean project does not install pdfjs itself).
+import { readFileSync } from 'node:fs';
+
+const { getDocument } = await import(
+  'file://' + process.env.PDFJS_PATH
+);
+const data = new Uint8Array(readFileSync('output.pdf'));
+const doc = await getDocument({ data, verbosity: 0 }).promise;
+const page = await doc.getPage(1);
+const content = await page.getTextContent();
+const text = content.items.map((item) => item.str).join(' ');
+
+const required = [
+  'Installed markdown',
+  'clean install',
+  'list item one',
+  'list item two',
+  'a link',
+  'inline code',
+];
+const normalized = text.replace(/\s+/g, '');
+for (const needle of required) {
+  if (!normalized.includes(needle.replace(/\s+/g, ''))) {
+    console.error(`FAIL: markdown text missing from PDF: "${needle}"`);
+    console.error('Extracted text:', text);
+    process.exit(1);
+  }
+}
+console.log('OK: markdown content present in rendered PDF text');
 EOF
 
 if [ "$LINKED" -eq 1 ]; then
@@ -147,3 +176,6 @@ echo "Building SSR bundle..."
 
 echo "Rendering PDF from installed packages..."
 node .build/render.js
+
+echo "Verifying markdown text in the rendered PDF (pdfjs extraction)..."
+PDFJS_PATH="$ROOT/node_modules/pdfjs-dist/legacy/build/pdf.mjs" node check-text.mjs

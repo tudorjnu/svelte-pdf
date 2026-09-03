@@ -1,0 +1,3 @@
+# value prop for text instead of template text
+
+Text content is passed via an explicit `value` prop (`<Text value="Hello World" />`) rather than as template children (`<Text>Hello World</Text>`). Svelte has no equivalent of React's reconciler `createTextInstance` hook — template text becomes DOM text nodes, not objects in our element tree. Extracting text from a hidden DOM element (the alternative) requires a DOM, doesn't work in SSR without jsdom, and is fragile with mixed content. The `value` prop works everywhere (browser, SSR, Node), has no mixed-content ambiguity, and pairs with a separate `@svelte-pdf/markdown` package for rich text (bold, italic, links). The trade-off is losing the natural `<Text>Hello</Text>` syntax that react-pdf users expect.

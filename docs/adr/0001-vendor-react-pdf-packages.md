@@ -1,0 +1,3 @@
+# Vendor @react-pdf/\* packages instead of depending on them
+
+We vendor react-pdf's framework-agnostic packages (layout, render, pdfkit, font, image, textkit, stylesheet, primitives, fns, types, math) into a new standalone repo as `@svelte-pdf/*`, rather than depending on the published `@react-pdf/*` npm packages. This gives us full control to evolve the engine if Svelte's needs diverge, avoids breaking our users when react-pdf ships a major version bump, and lets us cherry-pick upstream fixes at our own pace. The trade-off is taking on maintenance of ~30k lines of engine code, but the engine is mature and changes infrequently.

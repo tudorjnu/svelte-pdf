@@ -1,0 +1,3 @@
+# Svelte 5 only
+
+We target Svelte 5 exclusively — no Svelte 4 support. Svelte 5's runes (`$props`, `$state`, `$effect`), snippets (`{@render}`), and improved context API map naturally onto the reactive tree-building approach we need: prop changes are watched via `$effect` and synced onto tree nodes automatically. Supporting both Svelte 4 and 5 would require conditional patterns, dual reactivity models, and the inability to use runes or snippets — the same maintenance burden visible in react-pdf's three separate reconciler files for React 16–19. We're starting fresh; we target the current version. If Svelte 4 demand materializes, it can be added later.

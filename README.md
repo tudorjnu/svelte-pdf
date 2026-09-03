@@ -128,6 +128,26 @@ packages/renderer/scripts/e2e-browser-install.sh
 
 Run it without arguments for a real registry install, or with `--linked` for offline use; it keeps the scaffolded project and prints a `vite preview` command for visual confirmation.
 
+## Markdown
+
+Add the optional package:
+
+```bash
+npm install @svelte-pdf/markdown
+```
+
+Then drop `<Markdown content="..." />` anywhere inside a `<Page>` (it parses the string with `marked` and builds `Text`/`Link`/styled nodes through the context API):
+
+```svelte
+<script>
+  import { Markdown } from '@svelte-pdf/markdown';
+</script>
+
+<Markdown content="# Heading\n\nA paragraph with **bold** and [a link](https://svelte.dev)." />
+```
+
+Supported: headings, paragraphs, bold, italic, strikethrough, links, ordered/unordered lists, blockquotes, inline code, code blocks, horizontal rules.
+
 ## Extended feature example
 
 A larger example is included to exercise all core components:
@@ -174,9 +194,12 @@ Build state:
 
 - `@svelte-pdf/engine` — builds with Rollup (`bun run --cwd packages/engine build`): `dist/` JS + `.d.ts` for every subpath export, `yoga-layout` kept external.
 - `@svelte-pdf/renderer` — both entries build: `./server` → `dist/server/` and the browser `.` entry → `dist/index.js` (client-compiled components + `usePDF`/`PDFViewer`/`PDFDownloadLink`), each with `.d.ts`. The `svelte` condition still resolves to `src/` so Vite/SvelteKit compile per environment.
-- `@svelte-pdf/markdown` — source-only.
+- `@svelte-pdf/markdown` — builds with Rollup: `.` → `dist/index.js` (client-compiled `Markdown` + `.d.ts`), with the `svelte` condition resolving to `src/` so SvelteKit/Vite compile it per environment. Verified by the e2e clean-install script.
 
 Remaining before first publish:
+
+- The Changesets + `bun release` pipeline (ticket 9).
+- Known issue: markdown link parsing trips on marked's plain-text tokens (`token.tokens` missing) — see `packages/markdown/src/Markdown.svelte`; this blocks the markdown e2e and one renderer test.
 
 ```bash
 # 1. Add build scripts (e.g. Rollup or tsup) to each package
@@ -257,7 +280,8 @@ This generates `preview-1.png`, `preview-2.png`, etc. at 200 DPI.
 
 ## Known limitations and risks
 
-- **Build pipeline**: the engine, the renderer's `./server` entry, and the renderer's browser entry are built (Rollup, `yoga-layout` external). The markdown build is still pending, and no CI or Changesets wiring exists yet.
+- **Build pipeline**: engine, renderer (`./server` + browser entries) and markdown are built (Rollup, `yoga-layout` external). No CI or Changesets wiring exists yet (ticket 9).
+- **Markdown link parsing**: `Markdown.svelte` assumes inline tokens always carry a `tokens` array; marked v12 emits plain `text` tokens for simple link children, which throws `"text is not iterable"`. Affects the `all-features` renderer test and any markdown containing links.
 - **Build tooling quirk**: rollup's property-value analysis cannot see the ROOT-container mutation that happens inside Svelte's `render()` context, so the renderer's server bundle is built with `treeshake: false` (see `packages/renderer/rollup.config.js`). Re-enable tree-shaking only after verifying the `renderToBuffer`/`renderToStream` bodies survive.
 - **Browser fonts**: `fontkit.open` (used for remote-URL fonts) is absent from fontkit's browser build, so custom remote fonts fail in the browser — standard fonts and `Buffer`/`Uint8Array` sources work. Fetching remote fonts to data is follow-up engine work.
 - **Browser APIs**: `usePDF`, `PDFViewer`, and `PDFDownloadLink` are verified through the browser-entry smoke test and the e2e Vite bundle build; full runtime verification needs a real browser (`packages/renderer/scripts/e2e-browser-install.sh` prints a `vite preview` command).

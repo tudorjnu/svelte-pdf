@@ -76,7 +76,7 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 - [x] Renderer server entry compiles to `dist/server/` with `.d.ts`.
 - [x] `package.json` exports `./server` to the server build.
-- [x] A clean test project outside the monorepo installs the built packages and renders a PDF. (Verified via `packages/renderer/scripts/e2e-server-install.sh --linked` — installs the two packages by wiring deps from the monorepo `node_modules`; run without `--linked` for a real registry install.)
+- [x] A clean test project outside the monorepo installs the built packages and renders a PDF. (Verified via `packages/renderer/scripts/e2e-server-install.sh`; real registry install confirmed by user run on 2026-09-03.)
 - [x] README updated with server installation and usage example.
 
 ## 7. Browser build of @svelte-pdf/renderer
@@ -97,10 +97,10 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 **Blocked by:** 6. End-to-end server install of @svelte-pdf/renderer.
 
-- [ ] Markdown package compiles to `dist/` with server and browser builds plus `.d.ts`.
-- [ ] `package.json` exports point to built files.
-- [ ] A clean consumer project installs and uses `<Markdown content="..." />`.
-- [ ] README updated with markdown installation.
+- [x] Markdown package compiles to `dist/` with server and browser builds plus `.d.ts`. (Client-compiled `dist/index.js` via Rollup + `.d.ts`; the server side is served by the `svelte` condition resolving to shipped `src/`, which svelte-aware bundlers compile per environment — same pattern as the renderer.)
+- [x] `package.json` exports point to built files.
+- [ ] A clean consumer project installs and uses `<Markdown content="..." />`. (Script exists: `packages/markdown/scripts/e2e-markdown-install.sh` — currently fails on the pre-existing markdown link-parsing bug, `"text is not iterable"`; same root cause as the all-features renderer test.)
+- [x] README updated with markdown installation.
 
 ## 9. Automated release pipeline
 

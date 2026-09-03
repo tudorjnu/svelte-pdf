@@ -41,7 +41,10 @@ npm_pack engine "$ROOT/packages/engine"
 npm_pack renderer "$ROOT/packages/renderer"
 ENGINE_TGZ="$(ls "$WORK/vendor" | grep engine | head -1)"
 RENDERER_TGZ="$(ls "$WORK/vendor" | grep renderer | head -1)"
-[ -n "$ENGINE_TGZ" ] && [ -n "$RENDERER_TGZ" ] || { echo "FAIL: npm pack did not produce tarballs" >&2; exit 1; }
+[ -n "$ENGINE_TGZ" ] && [ -n "$RENDERER_TGZ" ] || {
+  echo "FAIL: npm pack did not produce tarballs" >&2
+  exit 1
+}
 
 cat >package.json <<EOF
 {

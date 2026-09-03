@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Ticket 6 acceptance test: a clean project OUTSIDE the monorepo installs
-# @svelte-pdf/renderer + @svelte-pdf/engine and renders a PDF via the
-# `./server` entry (renderToBuffer).
+# Ticket 8 acceptance test: a clean project OUTSIDE the monorepo installs
+# @svelte-pdf/markdown (+ renderer + engine) and renders a PDF containing
+# markdown content via renderToBuffer.
 #
 # Usage:
-#   e2e-server-install.sh            # real `bun install` (needs registry access)
-#   e2e-server-install.sh --linked   # offline: symlink deps from the monorepo's
-#                                    # node_modules instead of installing
+#   e2e-markdown-install.sh            # real `bun install` (needs registry access)
+#   e2e-markdown-install.sh --linked   # offline: symlink deps from the monorepo's
+#                                      # node_modules instead of installing
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,49 +14,50 @@ ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 LINKED=0
 [ "${1:-}" = "--linked" ] && LINKED=1
 
-# Both packages must be built first.
-[ -f "$ROOT/packages/engine/dist/index.js" ] || {
-  echo "engine not built — run: bun run --cwd packages/engine build" >&2
-  exit 1
-}
-[ -f "$ROOT/packages/renderer/dist/server/server.js" ] || {
-  echo "renderer not built — run: bun run --cwd packages/renderer build" >&2
-  exit 1
-}
+for dist in \
+  "$ROOT/packages/engine/dist/index.js" \
+  "$ROOT/packages/renderer/dist/server/server.js" \
+  "$ROOT/packages/markdown/dist/index.js"; do
+  [ -f "$dist" ] || {
+    echo "not built: $dist — run bun run --cwd <package> build first" >&2
+    exit 1
+  }
+done
 
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/svelte-pdf-e2e-server.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/svelte-pdf-e2e-markdown.XXXXXX")"
 cleanup() { rm -rf "$WORK"; }
 trap cleanup EXIT
 
 mkdir -p "$WORK/src"
-cd "$WORK"
 
-# Pack real tarballs (npm pack) instead of file: links — file: symlinks make
-# bun resolve the packages' deps (svelte) through the monorepo, producing two
-# svelte runtime copies in the test project. Tarballs also exercise the
-# packages' `files` field, exactly like a real npm install will.
-echo "Packing @svelte-pdf/engine and @svelte-pdf/renderer tarballs..."
-mkdir -p vendor
+# Pack real tarballs (see e2e-server-install.sh for the rationale — file:
+# symlinks resolve deps through the monorepo and split the svelte runtime).
+echo "Packing engine, renderer and markdown tarballs..."
 npm_pack() {
   (cd "$2" && npm pack --cache "$WORK/vendor/.npm-cache" --pack-destination "$WORK/vendor" --loglevel=error >/dev/null 2>&1)
 }
 npm_pack engine "$ROOT/packages/engine"
 npm_pack renderer "$ROOT/packages/renderer"
+npm_pack markdown "$ROOT/packages/markdown"
 ENGINE_TGZ="$(ls "$WORK/vendor" | grep engine | head -1)"
 RENDERER_TGZ="$(ls "$WORK/vendor" | grep renderer | head -1)"
-[ -n "$ENGINE_TGZ" ] && [ -n "$RENDERER_TGZ" ] || {
+MARKDOWN_TGZ="$(ls "$WORK/vendor" | grep markdown | head -1)"
+[ -n "$ENGINE_TGZ" ] && [ -n "$RENDERER_TGZ" ] && [ -n "$MARKDOWN_TGZ" ] || {
   echo "FAIL: npm pack did not produce tarballs" >&2
   exit 1
 }
 
+cd "$WORK"
+
 cat >package.json <<EOF
 {
-  "name": "svelte-pdf-e2e-server",
+  "name": "svelte-pdf-e2e-markdown",
   "private": true,
   "type": "module",
   "dependencies": {
     "@svelte-pdf/engine": "file:./vendor/$ENGINE_TGZ",
-    "@svelte-pdf/renderer": "file:./vendor/$RENDERER_TGZ"
+    "@svelte-pdf/renderer": "file:./vendor/$RENDERER_TGZ",
+    "@svelte-pdf/markdown": "file:./vendor/$MARKDOWN_TGZ"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
@@ -64,45 +65,54 @@ cat >package.json <<EOF
     "vite": "^5.4.11"
   },
   "overrides": {
-    "@svelte-pdf/engine": "file:./vendor/$ENGINE_TGZ"
+    "@svelte-pdf/engine": "file:./vendor/$ENGINE_TGZ",
+    "@svelte-pdf/renderer": "file:./vendor/$RENDERER_TGZ"
   }
 }
 EOF
 
-cat >vite.config.js <<'EOF'
+cat > vite.config.js <<'EOF'
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
   plugins: [svelte()],
   ssr: {
-    noExternal: [/^@svelte-pdf\/renderer$/],
-    // Keep one svelte runtime (node_modules) shared between the compiled
-    // components and the prebuilt server bundle; the server subpath stays
-    // external so the installed dist/server/server.js is what actually runs.
+    noExternal: [/^@svelte-pdf\/(renderer|markdown)$/],
     external: ['svelte', '@svelte-pdf/renderer/server'],
   },
   build: { target: 'node18' },
 });
 EOF
 
-cat >src/MyDocument.svelte <<'EOF'
+cat > src/MyDocument.svelte <<'EOF'
 <script>
   import { Document, Page, View, Text } from '@svelte-pdf/renderer';
+  import { Markdown } from '@svelte-pdf/markdown';
+
+  const markdown = `
+# Installed markdown
+
+This paragraph was rendered by **@svelte-pdf/markdown** from a *clean install*.
+
+- list item one
+- list item two
+
+[a link](https://svelte.dev) and \`inline code\`.
+`;
 </script>
 
-<Document title="svelte-pdf e2e server" author="e2e">
+<Document title="svelte-pdf e2e markdown">
   <Page size="A4">
     <View style={{ padding: 48, fontFamily: 'Helvetica' }}>
-      <Text style={{ fontSize: 18, color: '#111827' }}>
-        Rendered by @svelte-pdf/renderer/server from a clean install.
-      </Text>
+      <Text style={{ fontSize: 16 }}>Plain renderer text:</Text>
+      <Markdown content={markdown} />
     </View>
   </Page>
 </Document>
 EOF
 
-cat >src/render.js <<'EOF'
+cat > src/render.js <<'EOF'
 import { writeFileSync } from 'node:fs';
 import { renderToBuffer } from '@svelte-pdf/renderer/server';
 import MyDocument from './MyDocument.svelte';
@@ -111,6 +121,11 @@ const buffer = await renderToBuffer(MyDocument, {});
 const header = buffer.subarray(0, 5).toString('latin1');
 if (!header.startsWith('%PDF-')) {
   throw new Error(`Expected a PDF, got: ${JSON.stringify(header)}`);
+}
+// Markdown content must actually appear in the PDF text stream.
+const text = buffer.toString('latin1');
+if (!text.includes('Installed markdown')) {
+  throw new Error('Markdown heading missing from rendered PDF');
 }
 writeFileSync('output.pdf', buffer);
 console.log(`OK: renderToBuffer produced ${buffer.length} bytes -> output.pdf`);

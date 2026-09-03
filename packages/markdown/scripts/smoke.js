@@ -9,10 +9,16 @@ const root = resolve(__dirname, '..');
 // component imports svelte internals at mount time only, so importing the
 // module in node is safe.
 const browser = await import(resolve(root, 'dist/index.js'));
-assert(typeof browser.Markdown !== 'undefined', 'compiled Markdown component should be exported');
+assert(
+  typeof browser.Markdown !== 'undefined',
+  'compiled Markdown component should be exported',
+);
 
 // Also resolve through package.json exports from within the package.
 const packaged = await import('@svelte-pdf/markdown');
-assert(packaged.Markdown !== undefined, 'package . export should include Markdown');
+assert(
+  packaged.Markdown !== undefined,
+  'package . export should include Markdown',
+);
 
 console.log('Markdown smoke test passed.');

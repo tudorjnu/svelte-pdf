@@ -71,7 +71,7 @@ cat >package.json <<EOF
 }
 EOF
 
-cat > vite.config.js <<'EOF'
+cat >vite.config.js <<'EOF'
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
@@ -85,7 +85,7 @@ export default defineConfig({
 });
 EOF
 
-cat > src/MyDocument.svelte <<'EOF'
+cat >src/MyDocument.svelte <<'EOF'
 <script>
   import { Document, Page, View, Text } from '@svelte-pdf/renderer';
   import { Markdown } from '@svelte-pdf/markdown';
@@ -112,7 +112,7 @@ This paragraph was rendered by **@svelte-pdf/markdown** from a *clean install*.
 </Document>
 EOF
 
-cat > src/render.js <<'EOF'
+cat >src/render.js <<'EOF'
 import { writeFileSync } from 'node:fs';
 import { renderToBuffer } from '@svelte-pdf/renderer/server';
 import MyDocument from './MyDocument.svelte';

@@ -50,5 +50,10 @@ export default {
     sourcemap: true,
   },
   external,
-  plugins: [del({ targets: 'dist' }), commonjs(), nodeResolve({ preferBuiltins: true }), svelteCompileClient()],
+  plugins: [
+    del({ targets: 'dist' }),
+    commonjs(),
+    nodeResolve({ preferBuiltins: true }),
+    svelteCompileClient(),
+  ],
 };

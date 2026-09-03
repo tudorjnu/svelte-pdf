@@ -77,20 +77,28 @@
     }
 
     const parts = [];
+    const flushParts = () => {
+      if (parts.length > 0) {
+        appendText(children, parts.join(''), style);
+        parts.length = 0;
+      }
+    };
+
     for (const child of text) {
       if (child.type === 'text') {
         parts.push(child.text);
-      } else if (child.type === 'link') {
-        appendLink(parts.length > 0 ? children : parts, child.href, child.tokens, style);
-        if (parts.length > 0) {
-          for (const p of parts.splice(0, parts.length)) {
-            appendText(children, p, style);
-          }
-        }
       } else {
-        appendInlineStyled(children, child, style);
+        // Consecutive text children batch into one run; flush it so the
+        // styled child keeps its position in the text flow.
+        flushParts();
+        if (child.type === 'link') {
+          appendLink(children, child.href, child.tokens, style);
+        } else {
+          appendInlineStyled(children, child, style);
+        }
       }
     }
+    flushParts();
   };
 
   const buildParagraph = (tokens) => {

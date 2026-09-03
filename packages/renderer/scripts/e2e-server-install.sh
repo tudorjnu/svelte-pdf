@@ -31,14 +31,23 @@ trap cleanup EXIT
 mkdir -p "$WORK/src"
 cd "$WORK"
 
+# Pack real tarballs (npm pack) instead of file: links — file: symlinks make
+# bun resolve the packages' deps (svelte) through the monorepo, producing two
+# svelte runtime copies in the test project. Tarballs also exercise the
+# packages' `files` field, exactly like a real npm install will.
+echo "Packing @svelte-pdf/engine and @svelte-pdf/renderer tarballs..."
+mkdir -p vendor
+(cd "$ROOT/packages/engine" && npm pack --cache "$WORK/vendor/.npm-cache" --pack-destination "$WORK/vendor" >/dev/null)
+(cd "$ROOT/packages/renderer" && npm pack --cache "$WORK/vendor/.npm-cache" --pack-destination "$WORK/vendor" >/dev/null)
+
 cat >package.json <<EOF
 {
   "name": "svelte-pdf-e2e-server",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@svelte-pdf/engine": "file:$ROOT/packages/engine",
-    "@svelte-pdf/renderer": "file:$ROOT/packages/renderer"
+    "@svelte-pdf/engine": "file:./vendor/@svelte-pdf-engine-0.1.0.tgz",
+    "@svelte-pdf/renderer": "file:./vendor/@svelte-pdf-renderer-0.1.0.tgz"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
@@ -46,7 +55,7 @@ cat >package.json <<EOF
     "vite": "^5.4.11"
   },
   "overrides": {
-    "@svelte-pdf/engine": "file:$ROOT/packages/engine"
+    "@svelte-pdf/engine": "file:./vendor/@svelte-pdf-engine-0.1.0.tgz"
   }
 }
 EOF

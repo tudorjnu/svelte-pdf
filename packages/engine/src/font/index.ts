@@ -1,6 +1,6 @@
 import FontFamily from './font-family';
 
-import {
+import type {
   BulkLoad,
   EmojiSource,
   FontDescriptor,

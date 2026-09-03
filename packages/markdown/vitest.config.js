@@ -33,6 +33,11 @@ export default defineConfig({
         find: /^@svelte-pdf\/renderer$/,
         replacement: resolve(rendererRoot, 'src/index.js'),
       },
+      // Tests must not depend on a built dist/ (fresh CI checkouts have none).
+      {
+        find: /^@svelte-pdf\/renderer\/server$/,
+        replacement: resolve(rendererRoot, 'src/server.js'),
+      },
       {
         find: /^@svelte-pdf\/engine\/pdfkit\/standard-fonts\/(.+)$/,
         replacement: resolve(engineRoot, 'src/pdfkit/standard-fonts/$1.js'),

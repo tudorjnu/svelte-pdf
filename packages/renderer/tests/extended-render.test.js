@@ -11,7 +11,7 @@ import Extended from '../../../examples/Extended.svelte';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outputDir = resolve(__dirname, '../../../examples');
 const localImage = readFileSync(
-  resolve(__dirname, '../../../../packages/renderer/tests/images/orientation-1.jpeg'),
+  resolve(__dirname, './images/orientation-1.jpeg'),
 );
 
 class CanvasFactory {

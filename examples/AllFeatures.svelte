@@ -59,7 +59,7 @@
   const { title = 'svelte-pdf feature test' } = $props();
 
   const imageSrc = fs.readFileSync(
-    path.resolve(__dirname, '../../packages/renderer/tests/images/orientation-1.jpeg'),
+    path.resolve(__dirname, '../packages/renderer/tests/images/orientation-1.jpeg'),
   );
 
   const markdownContent = `

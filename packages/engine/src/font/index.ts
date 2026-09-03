@@ -204,6 +204,20 @@ class FontStore {
 
 export type FontStoreType = FontStore;
 
+/**
+ * Process-wide shared instance.
+ *
+ * The renderer's `Font` export must be the *same object* in every module
+ * graph: svelte-aware bundlers load `src/` (via the `svelte` export
+ * condition) while non-svelte consumers load the compiled `dist/` bundles,
+ * and an SSR app mixes both in one process. A store instantiated per
+ * renderer module copy would silently drop `Font.register` calls made
+ * through the other copy. Anchoring the singleton here — in a module that
+ * resolves to exactly one file per environment — keeps `Font` identity
+ * stable across all graphs.
+ */
+export const fontStore = new FontStore();
+
 export * from './types';
 
 export default FontStore;

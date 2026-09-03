@@ -2,14 +2,12 @@ import { upperFirst } from '@svelte-pdf/engine/fns';
 import renderPDF from '@svelte-pdf/engine/render';
 import PDFDocument from '@svelte-pdf/engine/pdfkit';
 import layoutDocument from '@svelte-pdf/engine/layout';
-import FontStore from '@svelte-pdf/engine/font';
+import { fontStore } from '@svelte-pdf/engine/font';
 
 import { omitNils } from './utils.js';
 import packageJson from '../package.json';
 
 const { version } = packageJson;
-
-const fontStore = new FontStore();
 
 const pdf = (initialValue, { onChange = () => {} } = {}) => {
   const container = { type: 'ROOT', document: null, onChange };

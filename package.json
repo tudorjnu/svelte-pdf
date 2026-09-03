@@ -13,7 +13,11 @@
     "test:renderer": "vitest --config packages/renderer/vitest.config.js",
     "test:markdown": "vitest --config packages/markdown/vitest.config.js",
     "test:renderer:run": "vitest run --config packages/renderer/vitest.config.js",
-    "test:markdown:run": "vitest run --config packages/markdown/vitest.config.js"
+    "test:markdown:run": "vitest run --config packages/markdown/vitest.config.js",
+    "test:engine:run": "vitest run --config packages/engine/vitest.config.js",
+    "build": "bun run --cwd packages/engine build && bun run --cwd packages/renderer build && bun run --cwd packages/markdown build",
+    "version-packages": "changeset version",
+    "release": "bun run build && changeset publish"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^0.1.100",

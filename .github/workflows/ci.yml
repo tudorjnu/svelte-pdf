@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Bun installs the workspace (frozen lockfile); Node 22 runs the tests.
+      # The engine suite has known environmental failures on Node 24
+      # (yoga-layout WASM loader, Buffer handling), so CI pins Node 22 — the
+      # same LTS the local suites were green on before the Node 24 upgrade.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: bun install --frozen-lockfile
+      - run: bun run test:engine:run
+      - run: bun run test:renderer:run
+      - run: bun run test:markdown:run
+      - run: bun run build
+      - run: bun run --cwd packages/engine smoke
+      - run: bun run --cwd packages/renderer smoke
+      - run: bun run --cwd packages/markdown smoke

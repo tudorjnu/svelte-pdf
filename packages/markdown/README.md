@@ -1,6 +1,6 @@
 # @svelte-pdf/markdown
 
-Markdown-to-PDF component for [svelte-pdf](https://github.com/diegomura/react-pdf).
+Markdown-to-PDF component for [svelte-pdf](https://github.com/tudorjnu/svelte-pdf).
 
 ## Installation
 
@@ -27,7 +27,7 @@ npm install @svelte-pdf/markdown
 
 - Headings (`#` to `######`)
 - Paragraphs
-- **Bold**, *italic*, ~~strikethrough~~
+- **Bold**, _italic_, ~~strikethrough~~
 - [Links](https://example.com)
 - Unordered and ordered lists
 - Blockquotes

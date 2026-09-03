@@ -108,10 +108,10 @@ Work the **frontier**: any ticket whose blockers are all done. For a purely line
 
 **Blocked by:** 7. Browser build of @svelte-pdf/renderer and 8. Build and install @svelte-pdf/markdown.
 
-- [ ] Changesets configured in the monorepo root.
-- [ ] `bun version-packages` applies changeset bumps.
-- [ ] `bun release` publishes `engine`, `renderer`, and `markdown`.
-- [ ] CI workflow runs build + tests on PRs and publishes on merge.
+- [x] Changesets configured in the monorepo root (`.changeset/config.json`, root `build`/`version-packages`/`release` scripts).
+- [ ] `bun version-packages` applies changeset bumps (config in place; version-PR path not yet exercised — the package-README changeset will be the first run).
+- [x] `bun release` publishes `engine`, `renderer`, and `markdown` — 0.1.0 ×3 published via the Release workflow after adding the `NPM_TOKEN` secret (npm token with 2FA bypass). Versioning continues from 0.1.x; package READMEs ship in 0.1.1 via the first changeset Version PR. (npm now blocks bypass-2fa granular tokens from unpublishing, so 0.1.0 is permanent.)
+- [x] CI workflow runs build + tests on PRs and publishes on merge (`ci.yml` verified green on the runner; `release.yml` published on push to `main`).
 
 ## 10. Document npm installation and bundler setup
 

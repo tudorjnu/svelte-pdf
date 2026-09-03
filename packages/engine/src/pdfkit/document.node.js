@@ -34,4 +34,5 @@ registerStdFonts(
   ZapfDingbats,
 );
 
+export { registerStdFonts };
 export default PDFDocument;

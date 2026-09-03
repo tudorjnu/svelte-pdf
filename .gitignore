@@ -14,3 +14,6 @@ packages/renderer/tests/__tmp-output.pdf
 # bun temp/cache (sandbox workaround — home is read-only)
 .bun-tmp
 .bun-cache
+
+# local secrets (never commit)
+.env

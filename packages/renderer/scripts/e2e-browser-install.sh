@@ -34,8 +34,14 @@ cd "$WORK"
 # symlinks resolve deps through the monorepo and split the svelte runtime).
 echo "Packing @svelte-pdf/engine and @svelte-pdf/renderer tarballs..."
 mkdir -p vendor
-(cd "$ROOT/packages/engine" && npm pack --cache "$WORK/vendor/.npm-cache" --pack-destination "$WORK/vendor" >/dev/null)
-(cd "$ROOT/packages/renderer" && npm pack --cache "$WORK/vendor/.npm-cache" --pack-destination "$WORK/vendor" >/dev/null)
+npm_pack() {
+  (cd "$2" && npm pack --cache "$WORK/vendor/.npm-cache" --pack-destination "$WORK/vendor" --loglevel=error >/dev/null 2>&1)
+}
+npm_pack engine "$ROOT/packages/engine"
+npm_pack renderer "$ROOT/packages/renderer"
+ENGINE_TGZ="$(ls "$WORK/vendor" | grep engine | head -1)"
+RENDERER_TGZ="$(ls "$WORK/vendor" | grep renderer | head -1)"
+[ -n "$ENGINE_TGZ" ] && [ -n "$RENDERER_TGZ" ] || { echo "FAIL: npm pack did not produce tarballs" >&2; exit 1; }
 
 cat >package.json <<EOF
 {
@@ -43,8 +49,8 @@ cat >package.json <<EOF
   "private": true,
   "type": "module",
   "dependencies": {
-    "@svelte-pdf/engine": "file:./vendor/@svelte-pdf-engine-0.1.0.tgz",
-    "@svelte-pdf/renderer": "file:./vendor/@svelte-pdf-renderer-0.1.0.tgz"
+    "@svelte-pdf/engine": "file:./vendor/$ENGINE_TGZ",
+    "@svelte-pdf/renderer": "file:./vendor/$RENDERER_TGZ"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
@@ -52,7 +58,7 @@ cat >package.json <<EOF
     "vite": "^5.4.11"
   },
   "overrides": {
-    "@svelte-pdf/engine": "file:./vendor/@svelte-pdf-engine-0.1.0.tgz"
+    "@svelte-pdf/engine": "file:./vendor/$ENGINE_TGZ"
   }
 }
 EOF

@@ -37,7 +37,9 @@
       box: {},
     };
 
-    for (const part of parts) {
+    // marked v12 emits link children as plain `text` tokens; some carry no
+    // `tokens` array at all, so the parts list itself may be absent.
+    for (const part of parts ?? []) {
       if (typeof part === 'string') {
         link.children.push({
           type: primitives.Text,
@@ -64,7 +66,10 @@
       style.backgroundColor = '#f0f0f0';
     }
 
-    const text = token.type === 'codespan' ? token.text : token.tokens;
+    // marked's inline tokens always carry their children in `tokens`, except
+    // `codespan` (raw text in `text`) and bare `text` leaves (also in `text`).
+    const text =
+      token.type === 'codespan' ? token.text : (token.tokens ?? token.text);
 
     if (typeof text === 'string') {
       appendText(children, text, style);

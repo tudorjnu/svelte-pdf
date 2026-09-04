@@ -287,19 +287,82 @@ describe('resolve stylesheet paddings', () => {
     });
   });
 
-  test('should resolve individual padding with percentage', () => {
+  test('should resolve padding from object with all sides', () => {
     const styles = resolveStyle({
-      paddingTop: '10%',
-      paddingRight: '20%',
-      paddingBottom: '30%',
-      paddingLeft: '40%',
+      padding: { top: 10, right: 20, bottom: 30, left: 40 },
     });
 
     expect(styles).toEqual({
-      paddingTop: '10%',
-      paddingRight: '20%',
-      paddingBottom: '30%',
-      paddingLeft: '40%',
+      paddingTop: 10,
+      paddingRight: 20,
+      paddingBottom: 30,
+      paddingLeft: 40,
     });
+  });
+
+  test('should resolve padding from partial object', () => {
+    const styles = resolveStyle({
+      padding: { top: 10, left: 40 },
+    });
+
+    expect(styles).toEqual({
+      paddingTop: 10,
+      paddingRight: 0,
+      paddingBottom: 0,
+      paddingLeft: 40,
+    });
+  });
+
+  test('should resolve padding from object with unit strings', () => {
+    const styles = resolveStyle({
+      padding: { top: '10mm', right: '20in', bottom: '30mm', left: '40pt' },
+    });
+
+    expect(styles).toEqual({
+      paddingTop: 28.34645669291339,
+      paddingRight: 1440,
+      paddingBottom: 85.03937007874016,
+      paddingLeft: 40,
+    });
+  });
+
+  test('should resolve padding horizontal from object', () => {
+    const styles = resolveStyle({
+      paddingHorizontal: { right: 10, left: 20 },
+    });
+
+    expect(styles).toEqual({
+      paddingRight: 10,
+      paddingLeft: 20,
+    });
+  });
+
+  test('should resolve padding vertical from partial object', () => {
+    const styles = resolveStyle({
+      paddingVertical: { top: 10 },
+    });
+
+    expect(styles).toEqual({
+      paddingTop: 10,
+      paddingBottom: 0,
+    });
+  });
+
+  test('should resolve individual padding from object', () => {
+    const styles = resolveStyle({
+      paddingTop: { top: '1cm' },
+    });
+
+    expect(styles).toEqual({
+      paddingTop: 28.346456692913385,
+    });
+  });
+
+  test('should ignore invalid object padding values', () => {
+    const styles = resolveStyle({
+      padding: { top: 'yellow', right: 20 },
+    });
+
+    expect(styles).toEqual({});
   });
 });

@@ -386,4 +386,96 @@ describe('resolve stylesheet margins', () => {
       marginBottom: 20,
     });
   });
+
+  test('should resolve margin from object with all sides', () => {
+    const styles = resolveStyle({
+      margin: { top: 10, right: 20, bottom: 30, left: 40 },
+    });
+
+    expect(styles).toEqual({
+      marginTop: 10,
+      marginRight: 20,
+      marginBottom: 30,
+      marginLeft: 40,
+    });
+  });
+
+  test('should resolve margin from partial object', () => {
+    const styles = resolveStyle({
+      margin: { top: 10, left: 40 },
+    });
+
+    expect(styles).toEqual({
+      marginTop: 10,
+      marginRight: 0,
+      marginBottom: 0,
+      marginLeft: 40,
+    });
+  });
+
+  test('should resolve margin from object with unit strings', () => {
+    const styles = resolveStyle({
+      margin: { top: '10mm', right: '20in', bottom: '30mm', left: '40pt' },
+    });
+
+    expect(styles).toEqual({
+      marginTop: 28.34645669291339,
+      marginRight: 1440,
+      marginBottom: 85.03937007874016,
+      marginLeft: 40,
+    });
+  });
+
+  test('should resolve margin horizontal from object', () => {
+    const styles = resolveStyle({
+      marginHorizontal: { right: 10, left: 20 },
+    });
+
+    expect(styles).toEqual({
+      marginRight: 10,
+      marginLeft: 20,
+    });
+  });
+
+  test('should resolve margin vertical from partial object', () => {
+    const styles = resolveStyle({
+      marginVertical: { top: 10 },
+    });
+
+    expect(styles).toEqual({
+      marginTop: 10,
+      marginBottom: 0,
+    });
+  });
+
+  test('should resolve individual margin from object', () => {
+    const styles = resolveStyle({
+      marginTop: { top: '1cm' },
+    });
+
+    expect(styles).toEqual({
+      marginTop: 28.346456692913385,
+    });
+  });
+
+  test('should resolve margin object with auto', () => {
+    const styles = resolveStyle({
+      margin: { top: 'auto', right: 20, bottom: 30, left: 40 },
+    });
+
+    expect(styles).toEqual({
+      marginTop: 'auto',
+      marginRight: 20,
+      marginBottom: 30,
+      marginLeft: 40,
+    });
+  });
+
+  test('should ignore invalid object margin values', () => {
+    const styles = resolveStyle({
+      margin: { top: 'yellow', right: 20 },
+    });
+
+    expect(styles).toEqual({});
+  });
 });

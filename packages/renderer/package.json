@@ -1,6 +1,6 @@
 {
   "name": "@svelte-pdf/renderer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "description": "Svelte 5 renderer for svelte-pdf",
   "type": "module",
@@ -16,6 +16,10 @@
     "./server": {
       "types": "./dist/server/server.d.ts",
       "default": "./dist/server/server.js"
+    },
+    "./pdfjs-pages": {
+      "types": "./dist/pdfjs-pages.d.ts",
+      "default": "./dist/pdfjs-pages.js"
     }
   },
   "files": [
@@ -32,7 +36,8 @@
     "queue": "^6.0.1"
   },
   "peerDependencies": {
-    "svelte": "^5.0.0"
+    "svelte": "^5.0.0",
+    "pdfjs-dist": ">=4"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^29.0.3",

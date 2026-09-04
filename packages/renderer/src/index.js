@@ -12,3 +12,5 @@ export { default as Image } from './Image.svelte';
 
 export { default as PDFViewer } from './PDFViewer.svelte';
 export { default as PDFDownloadLink } from './PDFDownloadLink.svelte';
+
+export { drawPdfPages } from './pdfjs-pages.js';

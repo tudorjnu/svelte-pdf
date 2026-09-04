@@ -14,7 +14,13 @@ Installs `@svelte-pdf/engine` as a dependency.
 
 PDF components: `Document`, `Page`, `View`, `Text`, `Link`, `Note`, `Image`.
 
-Browser components: `PDFViewer` (renders the PDF in an iframe), `PDFDownloadLink` (triggers a download). The `usePDF()` function returns reactive state `{ url, blob, loading, error }` that follows document changes.
+Browser components: `PDFViewer` (renders the PDF as `canvas` pages via `pdfjs-dist`), `PDFDownloadLink` (triggers a download). The `usePDF()` function returns reactive state `{ url, blob, loading, error }` that follows document changes.
+
+`pdfjs-dist` is a peer dependency for browser rendering:
+
+```bash
+npm install @svelte-pdf/renderer pdfjs-dist
+```
 
 The `Font` registration API (`register`, `registerHyphenationCallback`, `registerEmojiSource`) is exported from the root entry.
 

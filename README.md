@@ -99,18 +99,34 @@ Run it without arguments for a real registry install, or with `--linked` to wire
 
 Same install as the server. The browser entry provides the components plus `PDFViewer`, `PDFDownloadLink`, and `usePDF`:
 
+```bash
+npm install pdfjs-dist
+```
+
 ```svelte
 <script>
   import { PDFViewer, PDFDownloadLink } from '@svelte-pdf/renderer';
   import MyDocument from '$lib/MyDocument.svelte';
 </script>
 
-<PDFViewer document={MyDocument} documentProps={{ title: 'Hello' }} title="PDF preview" />
+<PDFViewer document={MyDocument} documentProps={{ title: 'Hello' }} zoom="fit" title="PDF preview" />
 
 <PDFDownloadLink document={MyDocument} fileName="hello.pdf">
   {#snippet children()}Download PDF{/snippet}
 </PDFDownloadLink>
 ```
+
+`PDFViewer` renders each PDF page into a `<canvas>` element using `pdfjs-dist` (the old `iframe` display has been removed because current Chrome versions no longer render blob URLs consistently). You can control the display with:
+
+- `zoom` — either a number or the string `'fit'` (default). `'fit'` scales each page to the container width; numbers are interpreted in PDF points and then converted to CSS pixels (`zoom * 96 / 72`).
+- `canvasStyle` — a style object merged onto each page canvas (the default sets `display: block` and `margin: 0 auto`).
+- `workerSrc` — URL of the pdfjs worker bundle. In Vite you can import it with `?url` and pass it through:
+
+  ```js
+  import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+  ```
+
+  If no worker source is configured, pdfjs falls back to a fake worker with a console warning, but rendering still works in browsers.
 
 ### How it resolves
 

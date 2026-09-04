@@ -89,15 +89,38 @@ export declare const Image: Component<
   }
 >;
 
+export interface DrawOpts {
+  cssScale: number;
+  dpr?: number;
+  isCancelled?: () => boolean;
+  onPages?: (pages: number) => void;
+  workerSrc?: string;
+  createCanvas?: (width: number, height: number) => { canvas: any; context: any };
+  canvasStyle?: Record<string, string>;
+}
+
+export interface DrawHandle {
+  pages: number;
+  destroy: () => void;
+}
+
+export declare function drawPdfPages(
+  container: HTMLElement,
+  data: Uint8Array,
+  opts: DrawOpts,
+): Promise<DrawHandle>;
+
 export declare const PDFViewer: Component<
   {
     /** The document component to render. */
     document: Component;
     documentProps?: Record<string, unknown>;
-    showToolbar?: boolean;
+    zoom?: number | 'fit';
     title?: string;
     style?: string | Record<string, string>;
     className?: string;
+    canvasStyle?: Record<string, string>;
+    workerSrc?: string;
   } & Record<string, unknown>
 >;
 

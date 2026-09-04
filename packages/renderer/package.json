@@ -1,6 +1,6 @@
 {
   "name": "@svelte-pdf/renderer",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
   "description": "Svelte 5 renderer for svelte-pdf",
   "type": "module",

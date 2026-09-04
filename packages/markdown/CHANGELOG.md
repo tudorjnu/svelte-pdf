@@ -1,5 +1,12 @@
 # @svelte-pdf/markdown
 
+## 0.2.0
+
+### Patch Changes
+
+- Updated dependencies [e49855f]
+  - @svelte-pdf/renderer@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes

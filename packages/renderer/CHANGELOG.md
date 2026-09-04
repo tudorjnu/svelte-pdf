@@ -1,5 +1,15 @@
 # @svelte-pdf/renderer
 
+## 0.1.2
+
+### Patch Changes
+
+- 730bf5c: Fix `Font` typing drift and generic `usePDF`: `FontSource.fontWeight` (was `weight`, matching the engine font store), declare the existing `Font.clear()`, and make `usePDF<P>` generic so typed `Component<P>` values are accepted.
+- Updated dependencies [4941eab]
+- Updated dependencies [7e5fd84]
+- Updated dependencies [104d2bb]
+  - @svelte-pdf/engine@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

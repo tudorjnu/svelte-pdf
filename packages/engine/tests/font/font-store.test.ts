@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import FontStore from '@svelte-pdf/engine/font/index';
 
@@ -8,9 +8,20 @@ describe('font store', () => {
     expect(fontStore).toBeTruthy();
   });
 
-  it('should throw if font is not registered', () => {
+  it('should warn and fall back to Helvetica if font is not registered', () => {
     const fontStore = new FontStore();
-    expect(() => fontStore.getFont({ fontFamily: 'Roboto' })).toThrow();
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const font = fontStore.getFont({ fontFamily: 'Roboto' });
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Font family not registered: Roboto. Please register it calling Font.register() method.',
+    );
+    expect(font?.fontFamily).toBe('Helvetica');
+    expect(font?.fontWeight).toBe(400);
+    expect(font?.fontStyle).toBe('normal');
+
+    warnSpy.mockRestore();
   });
 
   it('should register single font', () => {

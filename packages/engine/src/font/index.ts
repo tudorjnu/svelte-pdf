@@ -5,7 +5,7 @@ import type {
   EmojiSource,
   FontDescriptor,
   HyphenationCallback,
-  SingleLoad,
+  SingleLoad
 } from './types';
 
 class FontStore {
@@ -20,8 +20,8 @@ class FontStore {
         { src: 'Helvetica', fontStyle: 'normal', fontWeight: 400 },
         { src: 'Helvetica-Bold', fontStyle: 'normal', fontWeight: 700 },
         { src: 'Helvetica-Oblique', fontStyle: 'italic', fontWeight: 400 },
-        { src: 'Helvetica-BoldOblique', fontStyle: 'italic', fontWeight: 700 },
-      ],
+        { src: 'Helvetica-BoldOblique', fontStyle: 'italic', fontWeight: 700 }
+      ]
     });
 
     this.register({
@@ -30,8 +30,8 @@ class FontStore {
         { src: 'Courier', fontStyle: 'normal', fontWeight: 400 },
         { src: 'Courier-Bold', fontStyle: 'normal', fontWeight: 700 },
         { src: 'Courier-Oblique', fontStyle: 'italic', fontWeight: 400 },
-        { src: 'Courier-BoldOblique', fontStyle: 'italic', fontWeight: 700 },
-      ],
+        { src: 'Courier-BoldOblique', fontStyle: 'italic', fontWeight: 700 }
+      ]
     });
 
     this.register({
@@ -40,55 +40,55 @@ class FontStore {
         { src: 'Times-Roman', fontStyle: 'normal', fontWeight: 400 },
         { src: 'Times-Bold', fontStyle: 'normal', fontWeight: 700 },
         { src: 'Times-Italic', fontStyle: 'italic', fontWeight: 400 },
-        { src: 'Times-BoldItalic', fontStyle: 'italic', fontWeight: 700 },
-      ],
+        { src: 'Times-BoldItalic', fontStyle: 'italic', fontWeight: 700 }
+      ]
     });
 
     // For backwards compatibility
 
     this.register({
       family: 'Helvetica-Bold',
-      src: 'Helvetica-Bold',
+      src: 'Helvetica-Bold'
     });
 
     this.register({
       family: 'Helvetica-Oblique',
-      src: 'Helvetica-Oblique',
+      src: 'Helvetica-Oblique'
     });
 
     this.register({
       family: 'Helvetica-BoldOblique',
-      src: 'Helvetica-BoldOblique',
+      src: 'Helvetica-BoldOblique'
     });
 
     this.register({
       family: 'Courier-Bold',
-      src: 'Courier-Bold',
+      src: 'Courier-Bold'
     });
 
     this.register({
       family: 'Courier-Oblique',
-      src: 'Courier-Oblique',
+      src: 'Courier-Oblique'
     });
 
     this.register({
       family: 'Courier-BoldOblique',
-      src: 'Courier-BoldOblique',
+      src: 'Courier-BoldOblique'
     });
 
     this.register({
       family: 'Times-Bold',
-      src: 'Times-Bold',
+      src: 'Times-Bold'
     });
 
     this.register({
       family: 'Times-Italic',
-      src: 'Times-Italic',
+      src: 'Times-Italic'
     });
 
     this.register({
       family: 'Times-BoldItalic',
-      src: 'Times-BoldItalic',
+      src: 'Times-BoldItalic'
     });
 
     // Load default fonts
@@ -96,25 +96,25 @@ class FontStore {
     this.load({
       fontFamily: 'Helvetica',
       fontStyle: 'normal',
-      fontWeight: 400,
+      fontWeight: 400
     });
 
     this.load({
       fontFamily: 'Helvetica',
       fontStyle: 'normal',
-      fontWeight: 700,
+      fontWeight: 700
     });
 
     this.load({
       fontFamily: 'Helvetica',
       fontStyle: 'italic',
-      fontWeight: 400,
+      fontWeight: 400
     });
 
     this.load({
       fontFamily: 'Helvetica',
       fontStyle: 'italic',
-      fontWeight: 700,
+      fontWeight: 700
     });
   }
 
@@ -135,7 +135,7 @@ class FontStore {
           src,
           fontStyle,
           fontWeight,
-          ...options,
+          ...options
         });
       }
     } else {
@@ -144,7 +144,7 @@ class FontStore {
         src,
         fontStyle,
         fontWeight,
-        ...options,
+        ...options
       });
     }
   };
@@ -161,9 +161,20 @@ class FontStore {
     const { fontFamily } = descriptor;
 
     if (!this.fontFamilies[fontFamily]) {
-      throw new Error(
-        `Font family not registered: ${fontFamily}. Please register it calling Font.register() method.`,
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Font family not registered: ${fontFamily}. Please register it calling Font.register() method.`
       );
+
+      const standard = this.fontFamilies.Helvetica;
+
+      if (!standard) {
+        throw new Error(
+          `Font family not registered: ${fontFamily}, and the standard fonts are unavailable (was Font.clear() called?).`
+        );
+      }
+
+      return standard.resolve(descriptor);
     }
 
     return this.fontFamilies[fontFamily].resolve(descriptor);
@@ -196,8 +207,7 @@ class FontStore {
 
   getEmojiSource = (): EmojiSource | null => this.emojiSource;
 
-  getHyphenationCallback = (): HyphenationCallback | null =>
-    this.hyphenationCallback;
+  getHyphenationCallback = (): HyphenationCallback | null => this.hyphenationCallback;
 
   getRegisteredFontFamilies = (): string[] => Object.keys(this.fontFamilies);
 }

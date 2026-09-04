@@ -114,15 +114,15 @@ export declare const PDFDownloadLink: Component<
   } & Record<string, unknown>
 >;
 
-export declare const usePDF: (
-  component: Component,
-  props?: Record<string, unknown>,
+export declare const usePDF: <P extends Record<string, any>>(
+  component: Component<P>,
+  props?: P,
 ) => {
   readonly url: string | null;
   readonly blob: Blob | null;
   readonly loading: boolean;
   readonly error: Error | null;
-  update(component?: Component, props?: Record<string, unknown>): void;
+  update(component?: Component<P>, props?: P): void;
 };
 
 export type SveltePDFComponent = Component;

@@ -27,7 +27,7 @@ export declare const pdf: (
 export interface FontSource {
   src: string;
   family: string;
-  weight?: number;
+  fontWeight?: number;
   style?: string;
 }
 
@@ -38,6 +38,8 @@ export declare const Font: {
     url: string;
     format?: 'png' | 'jpg' | 'jpeg';
   }): void;
+  /** Clears all registered fonts, emoji sources and hyphenation callbacks. */
+  clear(): void;
 };
 
 export declare const version: string;

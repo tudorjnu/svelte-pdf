@@ -38,6 +38,23 @@ describe('node shouldBreak', () => {
     expect(result).toEqual(true);
   });
 
+  test('should not break when break is "avoid"', () => {
+    const result = shouldBreak(
+      {
+        type: 'VIEW',
+        props: { break: 'avoid' },
+        style: {},
+        children: [],
+        box: { top: 50, right: 0, bottom: 0, left: 0, height: 400, width: 200 },
+      },
+      [],
+      1000,
+      [],
+    );
+
+    expect(result).toEqual(false);
+  });
+
   test('should not break when the child can be wrapped', () => {
     const result = shouldBreak(
       {

@@ -3,7 +3,7 @@ import getWrap from './getWrap';
 import isFixed from './isFixed';
 
 const getBreak = (node: SafeNode) =>
-  'break' in node.props ? node.props.break : false;
+  'break' in node.props ? node.props.break === true : false;
 
 const getMinPresenceAhead = (node: SafeNode) =>
   'minPresenceAhead' in node.props ? node.props.minPresenceAhead : 0;

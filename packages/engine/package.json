@@ -1,6 +1,6 @@
 {
   "name": "@svelte-pdf/engine",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Framework-agnostic PDF engine for svelte-pdf (layout, render, pdfkit, font, text, styles)",
   "type": "module",

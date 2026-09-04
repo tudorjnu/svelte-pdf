@@ -1,6 +1,6 @@
 {
   "name": "@svelte-pdf/renderer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Svelte 5 renderer for svelte-pdf",
   "type": "module",
@@ -28,7 +28,7 @@
     "smoke": "node scripts/smoke.js"
   },
   "dependencies": {
-    "@svelte-pdf/engine": "0.1.0",
+    "@svelte-pdf/engine": "0.1.1",
     "queue": "^6.0.1"
   },
   "peerDependencies": {

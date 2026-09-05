@@ -8,19 +8,23 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22, 24]
     steps:
       - uses: actions/checkout@v4
 
-      # Bun installs the workspace (frozen lockfile); Node 22 runs the tests.
-      # The engine suite has known environmental failures on Node 24
-      # (yoga-layout WASM loader, Buffer handling), so CI pins Node 22 — the
-      # same LTS the local suites were green on before the Node 24 upgrade.
+      # Bun installs the workspace (frozen lockfile); the matrix Nodes run the
+      # tests. Node 24 was previously excluded for reported yoga-layout WASM /
+      # Buffer issues, but the full suite (2123 engine + 48 renderer + 3
+      # markdown tests, build, and all smokes) was verified green on both
+      # 22.18.0 and 24.16.0 with vitest 1.6.1 (see ticket 09).
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
 
       - run: bun install --frozen-lockfile
       - run: bun run test:engine:run

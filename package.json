@@ -20,18 +20,18 @@
     "release": "bun run build && changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^3.0.1",
+    "@changesets/cli": "^3.0.2",
     "@napi-rs/canvas": "^0.1.100",
     "@sveltejs/package": "^2.5.8",
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
     "jest-image-snapshot": "^6.5.2",
     "pdfjs-dist": "^4.10.38",
-    "svelte": "^5.56.8",
-    "svelte-check": "^4.7.5",
-    "vitest": "^1.2.0",
+    "svelte": "^5.57.0",
+    "svelte-check": "^4.7.6",
+    "vitest": "^1.6.1",
     "vitest-fetch-mock": "^0.4.5"
   },
   "dependencies": {
-    "marked": "^12.0.0"
+    "marked": "^12.0.2"
   }
 }

@@ -19,10 +19,7 @@ export interface DrawOpts {
    * Canvas factory injection for non-DOM environments (e.g. node tests via
    * @napi-rs/canvas). Defaults to document.createElement('canvas').
    */
-  createCanvas?: (
-    width: number,
-    height: number,
-  ) => { canvas: unknown; context: unknown };
+  createCanvas?: (width: number, height: number) => { canvas: unknown; context: unknown };
   /** Extra styles merged over the default structural canvas styles. */
   canvasStyle?: Record<string, string>;
 }
@@ -45,7 +42,7 @@ export interface DrawHandle {
 export declare function drawPdfPages(
   container: { appendChild(node: unknown): void },
   data: Uint8Array,
-  opts: DrawOpts,
+  opts: DrawOpts
 ): Promise<DrawHandle>;
 
 export declare const GlobalWorkerOptions: typeof GlobalWorkerOptionsType;

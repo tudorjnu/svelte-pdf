@@ -49,7 +49,7 @@ describe.skipIf(!puppeteer)('PDFViewer browser components (real Chrome)', () => 
       root: path.resolve(import.meta.dirname, '../../'),
       logLevel: 'error',
       server: { port: 0, strictPort: false },
-      plugins: [svelte()],
+      plugins: [svelte()]
     });
     await server.listen();
     baseUrl = server.resolvedUrls.local[0];
@@ -57,7 +57,7 @@ describe.skipIf(!puppeteer)('PDFViewer browser components (real Chrome)', () => 
     const launchOpts = {
       headless: 'shell',
       userDataDir: `/tmp/chrome-svpdf-${Date.now()}`,
-      args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-crash-reporter', '--disable-gpu'],
+      args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-crash-reporter', '--disable-gpu']
     };
     try {
       browser = await puppeteer.launch(launchOpts);
@@ -73,57 +73,65 @@ describe.skipIf(!puppeteer)('PDFViewer browser components (real Chrome)', () => 
     await server?.close();
   });
 
-  test('A: drawPdfPages paints real pages from a static PDF (pdfjs canvases)', { timeout: 90_000 }, async () => {
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1000, height: 900 });
-    const pageErrors = [];
-    page.on('pageerror', (e) => pageErrors.push(e.message));
+  test(
+    'A: drawPdfPages paints real pages from a static PDF (pdfjs canvases)',
+    { timeout: 90_000 },
+    async () => {
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1000, height: 900 });
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(e.message));
 
-    await page.goto(`${baseUrl}tests/browser/fixture/index.html`, {
-      waitUntil: 'networkidle2',
-      timeout: 60_000,
-    });
+      await page.goto(`${baseUrl}tests/browser/fixture/index.html`, {
+        waitUntil: 'networkidle2',
+        timeout: 60_000
+      });
 
-    await page.waitForFunction(
-      () => document.querySelectorAll('#viewer-canvas canvas').length > 0,
-      { timeout: 45_000 },
-    );
-    // let remaining pages paint
-    await new Promise((r) => setTimeout(r, 1500));
+      await page.waitForFunction(
+        () => document.querySelectorAll('#viewer-canvas canvas').length > 0,
+        { timeout: 45_000 }
+      );
+      // let remaining pages paint
+      await new Promise((r) => setTimeout(r, 1500));
 
-    const canvases = await page.evaluate(() =>
-      [...document.querySelectorAll('#viewer-canvas canvas')].map((c) => ({
-        w: c.width,
-        h: c.height,
-        painted: c.toDataURL().length > 2000, // blank canvas dataURL is tiny
-      })),
-    );
+      const canvases = await page.evaluate(() =>
+        [...document.querySelectorAll('#viewer-canvas canvas')].map((c) => ({
+          w: c.width,
+          h: c.height,
+          painted: c.toDataURL().length > 2000 // blank canvas dataURL is tiny
+        }))
+      );
 
-    expect(canvases.length).toBeGreaterThan(0);
-    for (const c of canvases) {
-      expect(c.w).toBeGreaterThan(100);
-      expect(c.h).toBeGreaterThan(100);
-      expect(c.painted).toBe(true);
+      expect(canvases.length).toBeGreaterThan(0);
+      for (const c of canvases) {
+        expect(c.w).toBeGreaterThan(100);
+        expect(c.h).toBeGreaterThan(100);
+        expect(c.painted).toBe(true);
+      }
+      // engine-independent demo must not throw
+      expect(pageErrors.join(' | ')).not.toMatch(/stream|externalized/i);
+      await page.close();
     }
-    // engine-independent demo must not throw
-    expect(pageErrors.join(' | ')).not.toMatch(/stream|externalized/i);
-    await page.close();
-  });
+  );
 
-  test.skip('B: PDFViewer renders a document component end-to-end (blocked: finding #1 — Node-only engine breaks the import graph)', { timeout: 90_000 }, async () => {
-    const page = await browser.newPage();
-    await page.goto(`${baseUrl}tests/browser/fixture/index.html`, {
-      waitUntil: 'networkidle2',
-      timeout: 60_000,
-    });
-    await page.waitForFunction(
-      () => document.querySelectorAll('#viewer-component canvas').length > 0,
-      { timeout: 45_000 },
-    );
-    const count = await page.evaluate(
-      () => document.querySelectorAll('#viewer-component canvas').length,
-    );
-    expect(count).toBe(2);
-    await page.close();
-  });
+  test.skip(
+    'B: PDFViewer renders a document component end-to-end (blocked: finding #1 — Node-only engine breaks the import graph)',
+    { timeout: 90_000 },
+    async () => {
+      const page = await browser.newPage();
+      await page.goto(`${baseUrl}tests/browser/fixture/index.html`, {
+        waitUntil: 'networkidle2',
+        timeout: 60_000
+      });
+      await page.waitForFunction(
+        () => document.querySelectorAll('#viewer-component canvas').length > 0,
+        { timeout: 45_000 }
+      );
+      const count = await page.evaluate(
+        () => document.querySelectorAll('#viewer-component canvas').length
+      );
+      expect(count).toBe(2);
+      await page.close();
+    }
+  );
 });

@@ -109,7 +109,12 @@ npm install pdfjs-dist
   import MyDocument from '$lib/MyDocument.svelte';
 </script>
 
-<PDFViewer document={MyDocument} documentProps={{ title: 'Hello' }} zoom="fit" title="PDF preview" />
+<PDFViewer
+  document={MyDocument}
+  documentProps={{ title: 'Hello' }}
+  zoom="fit"
+  title="PDF preview"
+/>
 
 <PDFDownloadLink document={MyDocument} fileName="hello.pdf">
   {#snippet children()}Download PDF{/snippet}
@@ -204,7 +209,123 @@ After running, open `svelte-pdf/examples/output.png` to see the rendered PDF pre
 
 You can edit `svelte-pdf/examples/Hello.svelte` to change what gets rendered, then run the same command again.
 
+## Worked example: lazyresume-2's resume template
+
+The patterns below are distilled from lazyresume-2, a SvelteKit resume builder (private repo) that runs this exact pipeline in production for preview, export, and print — one renderer, one set of bytes. On a real 4-page résumé the server pipeline renders in ~214 ms (p50), and the same workload was verified fully client-side in Chrome at ~164–185 ms (see ticket notes in the app repo).
+
+**1. Resolve a theme before rendering — templates hold no raw CSS.** Units, colors, and sizes are resolved once into a theme object (in PDF points); templates only read it:
+
+```ts
+import { resolveStyle } from '$lib/resume/templates/types';
+import { resolvePdfTheme } from '$lib/resume/pdf/theme';
+
+const theme = resolvePdfTheme(resolveStyle(style), 'Inter');
+// theme: { pageSize, margins: {top,right,bottom,left}, baseSize, headingSize,
+//          sectionGap, lineHeight, colors: {text, muted, primary} } — all in pt
+```
+
+**2. Register fonts with a fallback ladder.** Try the preferred fonts first; the first mode that renders is pinned for the process:
+
+```ts
+import { Font } from '@svelte-pdf/renderer/server';
+
+Font.register({ family: 'Inter', src: 'fonts/Inter-Regular.ttf', fontWeight: 400 });
+Font.register({ family: 'Inter', src: 'fonts/Inter-Bold.ttf', fontWeight: 700 });
+// …further modes (variable font, system fallbacks) registered lazily per mode
+```
+
+**3. The template is a Svelte component over the primitives.** All styling derives from the theme via one `withFont` helper; data sections render conditionally and rely on `wrap` for pagination:
+
+```svelte
+<!-- Template.svelte (distilled from lazyresume-2's default template) -->
+<script>
+  import { Document, Page, View, Text, Link, Image } from '@svelte-pdf/renderer';
+  import { withFont } from './theme.js';
+
+  let { resume, theme, avatarPath } = $props();
+
+  const pageStyle = $derived(
+    withFont(theme, {
+      paddingTop: theme.margins.top,
+      paddingBottom: theme.margins.bottom,
+      paddingLeft: theme.margins.left,
+      paddingRight: theme.margins.right
+    })
+  );
+  const nameStyle = $derived(
+    withFont(theme, { fontSize: theme.headingSize + 4, fontWeight: 700, color: theme.colors.text })
+  );
+  const linkStyle = $derived(
+    withFont(theme, { fontSize: theme.baseSize - 1, color: theme.colors.primary })
+  );
+</script>
+
+<Document title={`${resume.basics.name} — résumé`} author="lazyresume-2">
+  <Page size={theme.pageSize} wrap style={pageStyle}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }} wrap>
+      <View style={{ flex: 1 }}>
+        <Text style={nameStyle} value={resume.basics.name} />
+        {#each resume.basics.profiles ?? [] as p}
+          <Link href={p.url}>
+            <Text style={linkStyle} value={`${p.network}: ${p.url}`} />
+          </Link>
+        {/each}
+      </View>
+      {#if avatarPath}
+        <Image src={avatarPath} style={{ width: 70.9, height: 70.9 }} />
+      {/if}
+    </View>
+
+    {#each resume.work ?? [] as entry}
+      <View wrap style={{ marginBottom: theme.sectionGap }} minPresenceAhead={170}>
+        <Text style={linkStyle} value={entry.position} />
+        {#each entry.highlights ?? [] as highlight}
+          <Text value={highlight} />
+        {/each}
+      </View>
+    {/each}
+  </Page>
+</Document>
+```
+
+**4. The same component serves both transports.** Export renders server-side; the preview renders the same bytes onto pdfjs canvases (preview = export = print bytes):
+
+```ts
+// export / download (SvelteKit API route)
+import { renderToBuffer } from '@svelte-pdf/renderer/server';
+import Template from '$lib/resume/pdf/templates/default/Template.svelte';
+
+const buffer = await renderToBuffer(Template, { resume, theme, avatarPath });
+```
+
+```svelte
+<!-- live preview: the rendered PDF bytes, painted page by page -->
+<script>
+  import { drawPdfPages } from '@svelte-pdf/renderer/pdfjs-pages';
+
+  let container = $state(null);
+
+  $effect(() => {
+    if (!container || !bytes) return;
+    drawPdfPages(container, bytes, {
+      cssScale: 1,
+      workerSrc: pdfWorkerUrl
+    });
+  });
+</script>
+
+<div bind:this={container} />
+```
+
+The full implementation lives in the lazyresume-2 app repo under `src/lib/resume/pdf/` (render seam, theme resolution, template registry, primitives), with the svelte-pdf tracker in `.scratch/svelte-pdf-first/`.
+
 ## Publishing to npm
+
+### Versioning policy
+
+**Patch-only bumps during 0.x.** Every release targets the last published version + patch (e.g. `0.1.2 → 0.1.3`); never write `minor` or `major` changesets, even for feature work — feature content ships in patch releases while the library is pre-1.0. The three packages are a `linked` changesets group, so one changeset moves all of them to the same version.
+
+Current baseline: **0.2.0** (a `minor` changeset shipped the pdfjs-canvas PDFViewer in Sept 2026). Next release: `0.2.1`.
 
 Build state:
 
@@ -212,10 +333,9 @@ Build state:
 - `@svelte-pdf/renderer` — both entries build: `./server` → `dist/server/` and the browser `.` entry → `dist/index.js` (client-compiled components + `usePDF`/`PDFViewer`/`PDFDownloadLink`), each with `.d.ts`. The `svelte` condition still resolves to `src/` so Vite/SvelteKit compile per environment.
 - `@svelte-pdf/markdown` — builds with Rollup: `.` → `dist/index.js` (client-compiled `Markdown` + `.d.ts`), with the `svelte` condition resolving to `src/` so SvelteKit/Vite compile it per environment. Verified by the e2e clean-install script.
 
-Remaining before first publish:
+Release pipeline (in place): the GitHub `Release` workflow runs `changesets/action` — open changesets produce a "Version Packages" PR; merging it publishes to npm. See **Versioning policy** above.
 
-- The Changesets + `bun release` pipeline (ticket 9).
-- Known issue: markdown link parsing trips on marked's plain-text tokens (`token.tokens` missing) — see `packages/markdown/src/Markdown.svelte`; this blocks the markdown e2e and one renderer test.
+Known issue: markdown link parsing trips on marked's plain-text tokens (`token.tokens` missing) — see `packages/markdown/src/Markdown.svelte`; this blocks the markdown e2e and one renderer test.
 
 ```bash
 # 1. Add build scripts (e.g. Rollup or tsup) to each package
@@ -231,7 +351,7 @@ bun publish --workspace packages/markdown
 bun publish --workspace packages/engine
 ```
 
-Until a build pipeline is in place, the packages cannot be published as-is.
+Published releases ship the built `dist/` output; the GitHub Release workflow (changesets) handles versioning and publishing.
 
 ## Running tests
 
